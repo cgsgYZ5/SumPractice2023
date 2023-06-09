@@ -42,11 +42,13 @@ class _ubo extends _buffer {
     this.bindPoint = bindPoint;
     this.uBlockName = uBlockName;
   }
-  apply(gl, program, blk_loc) {
-    if (blk_loc < gl.MAX_UNIFORM_BUFFER_BINDINGS)
-      gl.uniformBlockBinding(program, blk_loc, this.bindPoint);
+  apply(gl, shd) {
+    const blk = shd.info.uniformBlocks[this.uBlockName].bind;
+    if (blk < gl.MAX_UNIFORM_BUFFER_BINDINGS) {
+      gl.uniformBlockBinding(shd.program, blk, this.bindPoint);
 
-    gl.bindBufferBase(gl.UNIFORM_BUFFER, this.bindPoint, this.bufId);
+      gl.bindBufferBase(gl.UNIFORM_BUFFER, this.bindPoint, this.bufId);
+    }
   }
 }
 

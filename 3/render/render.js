@@ -53,11 +53,10 @@ class _render {
       new Float32Array([
         ...matr().matrMulmatr(prim.mTrans, this.camera.matrVP).unpack(),
         ...this.camera.matrVP.unpack(),
-        ...matr().ortho(-1, 1, -1, 1, -1, 1).unpack(),
-        /*...prim.mTrans.unpack(),*/
+        ...prim.mTrans.unpack(),
       ])
     );
-    prim.mtl.ubo[0].apply(this.gl, prim.mtl.shd.program);
+    prim.mtl.ubo[0].apply(this.gl, prim.mtl.shd);
 
     this.gl.bindVertexArray(prim.VA);
     if (prim.IB != undefined) {

@@ -20,8 +20,10 @@
 
         window.addEventListener("load", () => {
             let sys = system("glCanvas");
-            let mtl = sys.render.mtlCreate("mtl_name",  ["P", "T", {"P" : 3, "T" : 2}], 
-                [1, 1,1 ,11, 1,121, 1], ["./bin/textures/M.bmp"], "./bin/shaders/3d");
+            let mtl = sys.render.mtlCreate("./bin/shaders/3d",
+                ["P", "T", {"P" : 3, "T" : 2}], 
+                ["Ka", "Kd", "Ks", {Ka:[1 ,1, 1], Kd:[1, 2, 3], Ks:[90, 12, 45]}],
+                ["uSampler1", "uSampler2",{"uSampler1" : "./bin/textures/M.bmp", "uSampler2" : "./bin/textures/D1.bmp"}]);
             let prim;
             
             let a = "-3*sqrt(5)+3)".indexOf("sqrt");
