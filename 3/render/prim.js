@@ -67,12 +67,12 @@ class _prim {
     let allSize = 0;
     for (let i = 0; i < mtl.vertData.length - 1; i++)
       allSize += mtl.vertData[mtl.vertData.length - 1][mtl.vertData[i]];
-    // mtl.mtlPat.vForm.args[i].name[0]
+
     for (let i = 0; i < mtl.vertData.length - 1; i++) {
       for (let j = 0; j < admisName[mtl.vertData[i]].length; j++) {
         const name = admisName[mtl.vertData[i]][j];
-        if (mtl.shd.attrs[name] != undefined) {
-          const loc = mtl.shd.attrs[name].loc;
+        if (mtl.shd.info.attrs[name] != undefined) {
+          const loc = mtl.shd.info.attrs[name].loc;
           gl.vertexAttribPointer(
             loc,
             mtl.vertData[mtl.vertData.length - 1][mtl.vertData[i]],

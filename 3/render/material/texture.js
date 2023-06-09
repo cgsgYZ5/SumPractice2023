@@ -31,19 +31,19 @@ class _texture {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       }
+      gl.bindTexture(gl.TEXTURE_2D, null);
     };
     image.src = url;
   }
-  apply(gl, shd) {
+  apply(gl, num, blk) {
     if (this.isLoad == true) {
-      const blk = gl.getUniformLocation(shd, "uSampler");
-      gl.activeTexture(gl.TEXTURE0);
+      gl.activeTexture(gl.TEXTURE0 + num);
 
       // Связываем текстуру с регистром 0
       gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
       // Указываем шейдеру, что мы связали текстуру с текстурным регистром 0
-      gl.uniform1i(blk, 0);
+      gl.uniform1i(blk, num);
     }
   }
 }
