@@ -13,11 +13,14 @@ class _material {
   constructor(gl, shdPass, vertData, mtlData, texData, userUbo = null) {
     this.gl = gl;
     this.vertData = vertData;
-
-    let mtlMas = [];
+let mtlMas = [];
+    if (mtlData != null && mtlData != undefined){
+    
     for (let i = 0; i < mtlData.length - 1; i++)
       mtlMas.push(...mtlData[mtlData.length - 1][mtlData[i]]);
-
+      
+    }
+    if (texData != null && texData != undefined){
     let texObj = [];
     for (let i = 0; i < texData.length - 1; i++) {
       if (texData[texData.length - 1][texData[i]] != undefined) {
@@ -27,14 +30,17 @@ class _material {
         else texObj[texData[i]] = tmp;
       } else alert("in tex mass");
     }
-    this.tex.push(texObj);
+    this.tex.push(texObj);}
+    else this.tex = [];
 
-    this.ubo[0] = ubo(gl, 48, 0, "projMatrix");
-    mtlMas.push(-1);
-    mtlMas.push(-1);
-    this.ubo[1] = ubo(gl, new Float32Array(mtlMas), 1, "primMaterial");
-    this.ubo[2] = userUbo;
-
+    this.ubo.push(ubo(gl, 48, 0, "projMatrix"));
+    if (mtlMas != undefined)
+    this.ubo.push(ubo(gl, new Float32Array(mtlMas), 1, "primMaterial"));
+    if (typeof(userUbo) == "object" && userUbo != null)
+    this.ubo.push(...userUbo);
+    else if (userUbo != null && userUbo!=undefined)
+    this.ubo.push(userUbo);
+  
     this.shd = shader(gl, shdPass);
   }
   apply(camera, time) {
@@ -48,7 +54,7 @@ class _material {
           this.shd.info.uniforms[this.tex[i]].loc
         );
 
-    this.ubo[1].apply(this.gl, this.shd);
+    //this.ubo[1].apply(this.gl, this.shd);
   }
 }
 

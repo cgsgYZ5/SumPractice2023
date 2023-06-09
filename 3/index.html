@@ -24,9 +24,13 @@
                 ["P", "T", {"P" : 3, "T" : 2}], 
                 ["Ka", "Kd", "Ks", {Ka:[1 ,1, 1], Kd:[1, 2, 3], Ks:[90, 12, 45]}],
                 ["uSampler1", "uSampler2",{"uSampler1" : "./bin/textures/M.bmp", "uSampler2" : "./bin/textures/D1.bmp"}]);
+            let mtl2 = sys.render.mtlCreate("./bin/shaders/3d",
+                ["P", {"P" : 3, "T" : 2}], 
+                null,
+                null);
             let prim;
+            let prim2;
             
-            let a = "-3*sqrt(5)+3)".indexOf("sqrt");
             getTextFromFile("./coords/tetrahedron.txt").then((res)=>{
                 const mas = res.split("==");
                 const V = mas[0].split(',');                
@@ -37,6 +41,17 @@
                     I[i] = Number(I[i]);
                 prim = sys.render.primCreate("triangle", V, I,  mtl);
                 prim.draw(matr());
+            });
+            getTextFromFile("./coords/hexahedron.txt").then((res)=>{
+                const mas = res.split("==");
+                const V = mas[0].split(',');                
+                const I = mas[1].split(',');
+                for (let i = 0; i<V.length;i++)
+                    V[i] = Number(V[i]);
+                for (let i = 0; i<I.length;i++)
+                    I[i] = Number(I[i]);
+                prim2 = sys.render.primCreate("triangle", V, I,  mtl2);
+                prim2.draw(matr());
             });
 
             const def = vec3(0, 0, 3) 
