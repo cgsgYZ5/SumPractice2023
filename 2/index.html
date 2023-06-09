@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>My first page</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <a href="../index.html">back</a>
+        <!--
+
+        //import { PauseEvent } from './main.js' 
+        //  import * as lib from './main.js' 
+        
+        /* Pause function set */
+        //document.addEventListener('keyup', PauseEvent, false);
+   
+        // function func2() {
+        //     console.log("ABC");
+        // }
+        // func2();
+
+        // window.addEventListener("load", () => {
+        //     window.setInterval(() => {
+        //         const elem = document.getElementById("1");
+        //         elem.innerText += 'A';
+        //         console.log(elem.innerText);
+        //     }, 1000)
+        // })
+        // const a = document.getElementById("1");
+        // a.innerText = "__YZ5__";
+        document.addEventListener("mousemove", MouseMove);
+        document.addEventListener("mouseup", MouseUp);
+        document.addEventListener("mousedown", MouseDown);
+        -->
+    <canvas id = "glCanvas" width="1000%" height="1000%"></canvas>
+    <script type="module">
+        import * as gl from "./main.js";
+
+        window.addEventListener("load", () => {
+            gl.InitGL();
+        });
+    </script>
+    <form name="slide" method="get"> 
+        <input id="slider1" type="range" min="-60" max="60" step="0.01"/>
+        <input id="button1" type="button"/>
+    </form>
+    <!-- 
+    <script type="module">
+        import { MouseMove } from './main.js'
+        import { MouseUp } from './main.js'
+        import { MouseDown } from './main.js'
+
+        document.addEventListener("mousemove", MouseMove);
+        document.addEventListener("mouseup", MouseUp);
+        document.addEventListener("mousedown", MouseDown);
+    </script>
+      
+        <div id="1" onClick="myClickHandle(event, this);"></div>
+        <div id="a1" onClick="myClickHandle(event, this);"></div>
+        <script>
+            window.location.href = "https://cgsg.pm130.ru"; let tag = document.getElementById('a');
+            tag.innerText = "abc";
+            tag.innerHTML = "abc";
+            let cl tag.getAttribute('class'); 
+            function myClickHandle (e, tag) {
+                if (e.type 'mousemove')
+            }
+        </script>
+        -->
+</body>
+
+</html>

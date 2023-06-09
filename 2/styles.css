@@ -1,0 +1,17 @@
+body{
+    background-color: rgb(90, 36, 172);
+}
+h{
+  background-color: mediumblue;
+  font-size: 2em;
+  filter: blur(0.2);
+}
+p {
+    background-color: rgb(59, 174, 76);
+    font-size: 19em;
+    filter: blur(0.2);
+}
+a {
+  font-size: 5em;
+  color: rgb(228, 106, 49);
+}

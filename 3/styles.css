@@ -1,0 +1,21 @@
+body{
+    background-color: rgb(159, 151, 172);
+}
+h{
+  background-color: mediumblue;
+  font-size: 2em;
+  filter: blur(0.2);
+}
+p {
+    background-color: rgb(59, 174, 76);
+    filter: blur(0.2);
+}
+a {
+  font-size: 5em;
+  color: rgb(228, 106, 49);
+}
+*.canva
+{
+  overscroll-behavior: contain;
+  overflow-y: hidden;
+}
