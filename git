@@ -1,2 +1,8 @@
+Get last revision
 git fetch
 git pull
+
+Update main files
+git add .
+git commit -m "School-10.06.2023"
+git push
