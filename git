@@ -6,3 +6,8 @@ Update main files
 git add .
 git commit -m "School-10.06.2023"
 git push
+
+Это отследит все файлы, удалит все ваши локальные изменения в этих файлах, а затем получит файлы с сервера.
+git add * 
+git stash
+git pull
