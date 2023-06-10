@@ -13,18 +13,20 @@ class _buffer {
     gl.bindBuffer(this.type, this.bufId);
     if (typeof data == "number") {
       this.size = data;
-      gl.bufferData(this.type, data, gl.STATIC_DRAW);
+
+      gl.bufferData(this.type, 4 * data, gl.STATIC_DRAW);
     } else {
       this.size = data.length;
+
       gl.bufferData(this.type, data, gl.STATIC_DRAW);
     }
   }
 
-  update(gl, newData) {
+  update(gl, off, newData) {
     gl.bindBuffer(this.type, this.bufId);
-    gl.bufferData(this.type, newData, gl.STATIC_DRAW);
+    // gl.bufferData(this.type, newData, gl.STATIC_DRAW);
 
-    /*gl.bufferSubData(this.type, 0, new Float32Array(newData));*/
+    gl.bufferSubData(this.type, off, newData);
   }
   apply(gl) {
     gl.bindBuffer(this.type, this.bufId);
@@ -35,17 +37,18 @@ class _buffer {
 
 class _ubo extends _buffer {
   bindPoint;
-  uBlockName;
 
-  constructor(gl, data, bindPoint, uBlockName) {
+  constructor(gl, data, bindPoint) {
     super(gl, gl.UNIFORM_BUFFER, data);
+    if (this.size % 16 != 0) console.error("buffer size not 16 * n");
+
     this.bindPoint = bindPoint;
-    this.uBlockName = uBlockName;
   }
-  apply(gl, shd) {
-    const blk = shd.info.uniformBlocks[this.uBlockName].bind;
+  apply(gl, prg, blk) {
     if (blk < gl.MAX_UNIFORM_BUFFER_BINDINGS) {
-      gl.uniformBlockBinding(shd.program, blk, this.bindPoint);
+      if (this.size < 48)
+        gl.bindBufferRange(gl.UNIFORM_BUFFER, blk, this.bufId, 0, this.size);
+      gl.uniformBlockBinding(prg, blk, this.bindPoint);
 
       gl.bindBufferBase(gl.UNIFORM_BUFFER, this.bindPoint, this.bufId);
     }

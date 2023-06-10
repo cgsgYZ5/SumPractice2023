@@ -66,7 +66,7 @@ class _prim {
     let off = 0;
     let allSize = 0;
     for (let i = 0; i < mtl.vertData.length - 1; i++)
-      allSize += mtl.vertData[mtl.vertData.length - 1][mtl.vertData[i]];
+      allSize += mtl.vertData.at(-1)[mtl.vertData[i]];
 
     for (let i = 0; i < mtl.vertData.length - 1; i++) {
       for (let j = 0; j < admisName[mtl.vertData[i]].length; j++) {
@@ -75,13 +75,13 @@ class _prim {
           const loc = mtl.shd.info.attrs[name].loc;
           gl.vertexAttribPointer(
             loc,
-            mtl.vertData[mtl.vertData.length - 1][mtl.vertData[i]],
+            mtl.vertData.at(-1)[mtl.vertData[i]],
             gl.FLOAT,
             false,
             allSize * 4,
             off
           );
-          off += mtl.vertData[mtl.vertData.length - 1][mtl.vertData[i]] * 4;
+          off += mtl.vertData.at(-1)[mtl.vertData[i]] * 4;
           gl.enableVertexAttribArray(loc);
           break;
         }

@@ -5,10 +5,16 @@ uniform sampler2D uSampler1;
 uniform sampler2D uSampler2;
 
 uniform primMaterial {
-  vec3 Ka;
+
   vec3 Kd;
+  vec3 Ka;
   vec3 Ks;
   float Ph;
+  int isTex1;
+  int isTex2;
+  // float isTex3;
+  // float isTex4;
+  // float isTex5;
 };
 
 out vec4 out_color;
@@ -28,18 +34,20 @@ void main(void) {
   // col = texture(uSampler1, TexCoords.xy * 2.0).rgb;
   // col = texture(uSampler2, vec2(TexCoords.x, TexCoords.y * 2.0 - 1.0)).rgb;
 
-  vec3 col;
-  if(TexCoords.x < 0.5 && TexCoords.y < 0.5)
-    col = texture(uSampler1, TexCoords.xy * 2.0).rgb;
-  else if(TexCoords.x > 0.5 && TexCoords.y > 0.5)
-    col = texture(uSampler1, (TexCoords - 0.5) * 2.0).rgb;
+  vec3 col = vec3(0.4, 0.6, 0.1);
+  if(isTex1 != 1 && isTex2 != 1) {
+    if(TexCoords.x < 0.5 && TexCoords.y < 0.5)
+      col = texture(uSampler1, TexCoords.xy * 2.0).rgb;
+    else if(TexCoords.x > 0.5 && TexCoords.y > 0.5)
+      col = texture(uSampler1, (TexCoords - 0.5) * 2.0).rgb;
 
-  else if(TexCoords.x < 0.5 && TexCoords.y > 0.5) {
-    col = texture(uSampler2, vec2(TexCoords.x, TexCoords.y * 2.0 - 1.0)).rgb;
-  } else
-    col = texture(uSampler2, vec2(TexCoords.x * 2.0 - 1.0, TexCoords.y)).rgb;
+    else if(TexCoords.x < 0.5 && TexCoords.y > 0.5) {
+      col = texture(uSampler2, vec2(TexCoords.x, TexCoords.y * 2.0 - 1.0)).rgb;
+    } else
+      col = texture(uSampler2, vec2(TexCoords.x * 2.0 - 1.0, TexCoords.y)).rgb;
+  }
   out_color = vec4(col, 1);
-
+/*
   if(DrawNormal.x == 1.0 && DrawNormal.y == 1.0 && DrawNormal.z == 1.0) {
     vec3 L = normalize(vec3(-0.3, -0.4, -0.2));
     vec3 LC = vec3(0.2, 0.3, 0.5);

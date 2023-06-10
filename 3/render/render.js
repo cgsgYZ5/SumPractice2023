@@ -7,7 +7,8 @@ import { material } from "./material/material.js";
 
 /* Render module */
 class _render {
-  static allPrims = [];
+  static allPrim = [];
+  static allShd = [];
 
   gl;
 
@@ -26,13 +27,13 @@ class _render {
   }
 
   mtlCreate(...arg) {
-    return material(this.gl, ...arg);
+    return material(this.gl, _render.allShd, ...arg);
   }
 
   primCreate(type, V, I, mtl) {
     const pr = prim(this.gl, type, V, I, mtl);
 
-    _render.allPrims.push(pr);
+    _render.allPrim.push(pr);
 
     return pr;
   }
@@ -45,18 +46,17 @@ class _render {
   }
 
   primDraw(prim) {
-    prim.mtl.apply(this.camera, this.timer);
-
     /* Matr UBO */
-    prim.mtl.ubo[0].update(
+    prim.mtl.ubo[prim.mtl.ubo.length - 1]["primMatrix"].update(
       this.gl,
+      0,
       new Float32Array([
         ...matr().matrMulmatr(prim.mTrans, this.camera.matrVP).unpack(),
         ...this.camera.matrVP.unpack(),
         ...prim.mTrans.unpack(),
       ])
     );
-    prim.mtl.ubo[0].apply(this.gl, prim.mtl.shd);
+    prim.mtl.apply(this.camera, this.timer);
 
     this.gl.bindVertexArray(prim.VA);
     if (prim.IB != undefined) {
@@ -70,7 +70,7 @@ class _render {
   end() {
     this.camera.update(this.input, this.timer);
 
-    _render.allPrims.forEach((prim, ind) => {
+    _render.allPrim.forEach((prim, ind) => {
       if (
         prim.isDraw === true &&
         prim.isDelete === false &&
@@ -80,7 +80,7 @@ class _render {
         /* UBO and uniforms */
         this.primDraw(prim);
       } else if (prim.isDelete === true && prim.isCreated === true) {
-        this.allPrims.splice(ind, 1);
+        this.allPrim.splice(ind, 1);
       }
     });
     this.input.reset();

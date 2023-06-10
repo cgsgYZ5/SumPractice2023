@@ -17,7 +17,7 @@ uniform atrix
 };
 */
 out vec4 DrawColor;
-uniform projMatrix {
+uniform primMatrix {
   mat4 WVP;
   mat4 VP;
   mat4 W;

@@ -22,11 +22,11 @@
             let sys = system("glCanvas");
             let mtl = sys.render.mtlCreate("./bin/shaders/3d",
                 ["P", "T", {"P" : 3, "T" : 2}], 
-                ["Ka", "Kd", "Ks", {Ka:[1 ,1, 1], Kd:[1, 2, 3], Ks:[90, 12, 45]}],
-                ["uSampler1", "uSampler2",{"uSampler1" : "./bin/textures/M.bmp", "uSampler2" : "./bin/textures/D1.bmp"}]);
+                ["Ka", "Kd", "Ks", "Ph", {Ka:[1 ,1, 1], Kd:[1, 2, 3], Ks:[90, 12, 45], Ph : 1}],
+                ["uSampler1", "uSampler2", {"uSampler1" : "bin/textures/M.bmp", "uSampler2" : "bin/textures/D1.bmp"}]);
             let mtl2 = sys.render.mtlCreate("./bin/shaders/3d",
-                ["P", {"P" : 3, "T" : 2}], 
-                null,
+                ["P", {"P" : 3}], 
+                ["Ka", "Kd", "Ks", "Ph", "Tex", {Ka:[1 ,1, 1], Kd:[1, 2, 3], Ks:[90, 12, 45], Ph : 1, Tex: [0, 0]}],
                 null);
             let prim;
             let prim2;

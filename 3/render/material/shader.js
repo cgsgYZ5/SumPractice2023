@@ -23,27 +23,49 @@ class _shader {
   info = { attrs: [], uniforms: [], uniformBlocks: [] };
 
   constructor(gl, pass) {
-    this.program = new Promise((resolve, reject) => {
-      const vs = getTextFromFile(pass + "/vert.glsl");
-      const fs = getTextFromFile(pass + "/frag.glsl");
-      Promise.all([vs, fs]).then((res) => {
-        const vertexShader = ShaderUploadToGL(gl, gl.VERTEX_SHADER, res[0]);
-        const fragmentShader = ShaderUploadToGL(gl, gl.FRAGMENT_SHADER, res[1]);
-        this.program = gl.createProgram();
+    if (typeof pass == "string") {
+      this.program = new Promise((resolve, reject) => {
+        const vs = getTextFromFile(pass + "/vert.glsl");
+        const fs = getTextFromFile(pass + "/frag.glsl");
+        Promise.all([vs, fs]).then((res) => {
+          const vertexShader = ShaderUploadToGL(gl, gl.VERTEX_SHADER, res[0]);
+          const fragmentShader = ShaderUploadToGL(
+            gl,
+            gl.FRAGMENT_SHADER,
+            res[1]
+          );
+          this.program = gl.createProgram();
 
-        gl.attachShader(this.program, vertexShader);
-        gl.attachShader(this.program, fragmentShader);
+          gl.attachShader(this.program, vertexShader);
+          gl.attachShader(this.program, fragmentShader);
 
-        gl.linkProgram(this.program);
-        if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
-          const Buf = gl.getProgramInfoLog(this.program);
-          reject(Buf);
-        } else this.getInfo(gl);
-        resolve(this.program);
+          gl.linkProgram(this.program);
+          if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
+            const Buf = gl.getProgramInfoLog(this.program);
+            reject(Buf);
+          } else this.getInfo(gl);
+          resolve(this.program);
+        });
+        //.then((prg) => (this.program = prg));
       });
-      //.then((prg) => (this.program = prg));
-    });
-    this.pass = pass;
+      const a = gl.getParameter(gl.UNIFORM_BUFFER_OFFSET_ALIGNMENT);
+      this.pass = pass;
+    } else {
+      /*
+      const vertexShader = ShaderUploadToGL(gl, gl.VERTEX_SHADER, res[0]);
+      const fragmentShader = ShaderUploadToGL(gl, gl.FRAGMENT_SHADER, res[1]);
+      this.program = gl.createProgram();
+
+      gl.attachShader(this.program, vertexShader);
+      gl.attachShader(this.program, fragmentShader);
+
+      gl.linkProgram(this.program);
+      if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
+        const Buf = gl.getProgramInfoLog(this.program);
+        reject(Buf);
+      } else this.getInfo(gl);
+      resolve(this.program);*/
+    }
   }
   apply(gl) {
     gl.useProgram(this.program);
@@ -69,6 +91,13 @@ class _shader {
         type: info.type,
         size: info.size,
         loc: gl.getUniformLocation(this.program, info.name),
+        /*
+        off: getActiveUniformBlockParameter(
+          this.program,
+          uniformBlockIndex,
+          info.name
+        ),
+        */
       };
     }
     // Fill shader uniform blocks info
@@ -92,7 +121,23 @@ class _shader {
           idx,
           gl.UNIFORM_BLOCK_BINDING
         ),
+        uIndex: gl.getActiveUniformBlockParameter(
+          this.program,
+          idx,
+          gl.UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES
+        ),
+        uNames: [],
       };
+      this.info.uniformBlocks[info].uOffset = gl.getActiveUniforms(
+        this.program,
+        this.info.uniformBlocks[info].uIndex,
+        gl.UNIFORM_OFFSET
+      );
+      for (let i = 0; i < this.info.uniformBlocks[info].uIndex.length; i++)
+        this.info.uniformBlocks[info].uNames[i] = gl.getActiveUniform(
+          this.program,
+          this.info.uniformBlocks[info].uIndex[i]
+        ).name;
     }
   }
 }
