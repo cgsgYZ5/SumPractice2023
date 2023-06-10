@@ -11,3 +11,10 @@ git push
 git add * 
 git stash
 git pull
+
+Пркратить отслеживание файла
+git rm -r --cached 
+
+Сделать .gitignore
+пустая строка
+node_modules/
