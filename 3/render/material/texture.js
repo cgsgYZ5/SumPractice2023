@@ -1,17 +1,36 @@
 class _texture {
-  isLoad;
-  url;
-  texture;
+  isCreate = false;
 
-  constructor(gl, url) {
+  texture;
+  url;
+  type;
+
+  constructor(gl, allTex = null, url, type = "tex2d") {
     this.url = url;
-    this.isLoad = false;
+    this.type = type;
+
+    if (allTex != null) {
+      const tex = this.search(allTex, url);
+      if (tex == null) allTex.push(this);
+      else {
+        this.texture = tex.texture;
+        this.isCreate = tex.isCreate;
+        return;
+      }
+    }
+    if (type == "tex2d") this.load2d(gl, url);
+    else if (type == "cube") this.loadCube(gl, url);
+  }
+  loadCube() {}
+  load2d(gl, url) {
+    this.type = gl.TEXTURE_2D;
     this.texture = gl.createTexture();
 
-    const image = new Image();
-    this.promise = new Promise(
-      (image.onload = () => {
-        this.isLoad = true;
+    this.promise = new Promise(() => {
+      const image = new Image();
+      image.onload = () => {
+        this.promise = undefined;
+        this.isCreate = true;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texImage2D(
           gl.TEXTURE_2D,
@@ -32,30 +51,29 @@ class _texture {
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         }
-        gl.bindTexture(gl.TEXTURE_2D, null);
-      })
-    );
-    image.src = url;
+      };
+      image.src = url;
+    });
   }
-  texFlagUpdate(gl, off) {
-    if (shd.program.then != undefined) {
-      shd.program.then(() => {
-        ubo.update(gl, off, new Float32Array([1]));
-      });
-    } else {
-      ubo.update(gl, off, new Float32Array([1]));
-    }
+  search(allTex, url) {
+    allTex.forEach((tex) => {
+      if (tex.url == url) return tex;
+    });
+    return null;
   }
   apply(gl, num, blk) {
-    if (this.isLoad == true) {
-      gl.activeTexture(gl.TEXTURE0 + num);
+    if (this.isCreate == true && blk < gl.MAX_UNIFORM_BUFFER_BINDINGS) {
+      gl.activeTexture(this.type + num);
 
-      // Связываем текстуру с регистром 0
-      gl.bindTexture(gl.TEXTURE_2D, this.texture);
+      gl.bindTexture(this.type, this.texture);
 
-      // Указываем шейдеру, что мы связали текстуру с текстурным регистром 0
       gl.uniform1i(blk, num);
     }
+  }
+  texFlagUpdate(gl, ubo, off) {
+    if (this.promise != undefined)
+      this.promise.then(() => ubo.update(gl, off, new Float32Array([1])));
+    else ubo.update(gl, off, new Float32Array([1]));
   }
 }
 export function texture(...arg) {

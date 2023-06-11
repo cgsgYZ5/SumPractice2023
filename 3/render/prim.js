@@ -1,3 +1,4 @@
+import { matr } from "../math/matr.js";
 import { buffer } from "./material/buffer.js";
 
 let admisName = [];
@@ -8,80 +9,103 @@ admisName["C"] = ["in_color", "Color"];
 
 /* Primitive module */
 class _prim {
-  isCreated;
-  isDelete;
-  isDraw;
+  isCreated = false;
+  isDelete = false;
+  isDraw = false;
 
   type;
   mTrans;
   mtl;
   VA;
   VB;
-  IB;
+  IB = null;
   numOfV;
 
   constructor(gl, type, V, I, mtl) {
-    /* Saved */
-    this.isCreated = false;
-    this.isDelete = false;
-    this.isDraw = false;
     if (type == "triangle strip") this.type = gl.TRIANGLE_STRIP;
     else if (type == "triangle") this.type = gl.TRIANGLES;
     else this.type = gl.POINTS;
 
     this.mtl = mtl;
-    /* this.VA = this.VB = this.VI = null; */
 
-    if (mtl.shd.program.then != undefined)
+    if (mtl.shd.isLoad) {
+      this.loadV(gl, V, I, mtl);
+      this.isCreated = true;
+    } else
       mtl.shd.program.then(() => {
         this.loadV(gl, V, I, mtl);
         this.isCreated = true;
       });
-    else {
-      this.loadV(gl, V, I, mtl);
-      this.isCreated = true;
-    }
   }
   draw(mTrans) {
     this.isDraw = true;
-    this.mTrans = mTrans;
+    if (mTrans == undefined || mTrans == null) {
+      console.assertlog("trans matrix for draw is incorrect");
+      this.mTrans = matr().identity();
+    } else this.mTrans = mTrans;
   }
   del() {
-    if (this.isCreated != true) this.isDelete = false;
+    this.isDelete = true;
   }
-  loadV(gl, V, I, mtl) {
-    if (I == undefined || I == null) this.numOfV = V.length / 3;
-    else this.numOfV = I.length;
+  convert(V, mtl) {
+    const Vert = [];
+    const massIndex = [];
+    for (let i = 0; i < mtl.vertData.length; i++) massIndex.push(0);
+    let n;
+    for (let i = 0; i < mtl.vertData.length; i++) {
+      if (V[mtl.vertData[i][0]] != undefined && V[mtl.vertData[i][0]] != null) {
+        n = V[mtl.vertData[i][0]].length / mtl.vertData[i][1];
+        break;
+      }
+    }
 
-    /* VA & VB */
+    for (let i = 0; i < n; i++)
+      for (let j = 0; j < massIndex.length; j++)
+        for (let k = 0; k < mtl.vertData[j][1]; k++)
+          Vert.push(V[mtl.vertData[j][0]][massIndex[j]++]);
+
+    return Vert;
+  }
+
+  loadV(gl, V, I, mtl) {
+    if (mtl.isCreated == false) {
+      console.log("prim is not create becouse material");
+      this.isCreated = false;
+      return;
+    }
+    if (I == undefined || I == null) {
+      this.numOfV = V.length;
+    } else this.numOfV = I.length;
+
     this.VA = gl.createVertexArray();
     gl.bindVertexArray(this.VA);
 
-    this.VB = buffer(gl, gl.ARRAY_BUFFER, new Float32Array(V));
+    if (typeof V == "object") V = this.convert(V, mtl);
+    if (V != undefined && V != null)
+      this.VB = buffer(gl, gl.ARRAY_BUFFER, new Float32Array(V));
+    else {
+      this.isCreated = false;
+      console.log("have not V in prim creating");
+    }
 
-    if (I != null && I != undefined)
-      /* index */
+    if (I != undefined && I != null)
       this.IB = buffer(gl, gl.ELEMENT_ARRAY_BUFFER, new Int16Array(I));
 
     let off = 0;
-    let allSize = 0;
-    for (let i = 0; i < mtl.vertData.length - 1; i++)
-      allSize += mtl.vertData.at(-1)[mtl.vertData[i]];
-
-    for (let i = 0; i < mtl.vertData.length - 1; i++) {
-      for (let j = 0; j < admisName[mtl.vertData[i]].length; j++) {
-        const name = admisName[mtl.vertData[i]][j];
+    for (let i = 0; i < mtl.vertData.length; i++) {
+      for (let j = 0; j < admisName[mtl.vertData[i][0]].length; j++) {
+        const name = admisName[mtl.vertData[i][0]][j];
         if (mtl.shd.info.attrs[name] != undefined) {
           const loc = mtl.shd.info.attrs[name].loc;
           gl.vertexAttribPointer(
             loc,
-            mtl.vertData.at(-1)[mtl.vertData[i]],
+            mtl.vertData[i][1],
             gl.FLOAT,
             false,
-            allSize * 4,
+            mtl.allVertDataSize * 4,
             off
           );
-          off += mtl.vertData.at(-1)[mtl.vertData[i]] * 4;
+          off += mtl.vertData[i][1] * 4;
           gl.enableVertexAttribArray(loc);
           break;
         }

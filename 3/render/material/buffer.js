@@ -24,7 +24,6 @@ class _buffer {
 
   update(gl, off, newData) {
     gl.bindBuffer(this.type, this.bufId);
-    // gl.bufferData(this.type, newData, gl.STATIC_DRAW);
 
     gl.bufferSubData(this.type, off, newData);
   }

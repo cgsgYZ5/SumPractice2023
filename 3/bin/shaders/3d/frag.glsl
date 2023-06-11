@@ -10,8 +10,8 @@ uniform primMaterial {
   vec3 Ka;
   vec3 Ks;
   float Ph;
-  int isTex1;
-  int isTex2;
+  float isTex1;
+  float isTex2;
   // float isTex3;
   // float isTex4;
   // float isTex5;
@@ -35,19 +35,24 @@ void main(void) {
   // col = texture(uSampler2, vec2(TexCoords.x, TexCoords.y * 2.0 - 1.0)).rgb;
 
   vec3 col = vec3(0.4, 0.6, 0.1);
-  if(isTex1 != 1 && isTex2 != 1) {
+  if (isTex1 == 1.) {
     if(TexCoords.x < 0.5 && TexCoords.y < 0.5)
       col = texture(uSampler1, TexCoords.xy * 2.0).rgb;
     else if(TexCoords.x > 0.5 && TexCoords.y > 0.5)
       col = texture(uSampler1, (TexCoords - 0.5) * 2.0).rgb;
-
-    else if(TexCoords.x < 0.5 && TexCoords.y > 0.5) {
+  }
+  if (isTex2 == 1.){
+    if(TexCoords.x < 0.5 && TexCoords.y > 0.5) {
       col = texture(uSampler2, vec2(TexCoords.x, TexCoords.y * 2.0 - 1.0)).rgb;
-    } else
+    } else if (TexCoords.x > 0.5 && TexCoords.y < 0.5)
       col = texture(uSampler2, vec2(TexCoords.x * 2.0 - 1.0, TexCoords.y)).rgb;
   }
-  out_color = vec4(col, 1);
-/*
+  if (isTex1==-1. && isTex2 == -1.)
+    out_color = vec4(DrawPos, 1);
+  else
+    out_color = vec4(col, 1);
+}
+  /*
   if(DrawNormal.x == 1.0 && DrawNormal.y == 1.0 && DrawNormal.z == 1.0) {
     vec3 L = normalize(vec3(-0.3, -0.4, -0.2));
     vec3 LC = vec3(0.2, 0.3, 0.5);
@@ -75,4 +80,3 @@ void main(void) {
   OutKdDepth = vec4(MtlKd, DrawPos.z);      
   OutNormalIsShade = vec4(normalize(DrawNormal), 1);
   */
-}
