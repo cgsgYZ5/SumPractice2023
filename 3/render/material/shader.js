@@ -17,58 +17,59 @@ function ShaderUploadToGL(gl, type, source) {
 }
 
 class _shader {
+  isLoad = false;
+  isCreate = false;
   pass;
   program;
 
   info = { attrs: [], uniforms: [], uniformBlocks: [] };
 
-  constructor(gl, pass) {
-    if (typeof pass == "string") {
-      this.program = new Promise((resolve, reject) => {
-        const vs = getTextFromFile(pass + "/vert.glsl");
-        const fs = getTextFromFile(pass + "/frag.glsl");
-        Promise.all([vs, fs]).then((res) => {
-          const vertexShader = ShaderUploadToGL(gl, gl.VERTEX_SHADER, res[0]);
-          const fragmentShader = ShaderUploadToGL(
-            gl,
-            gl.FRAGMENT_SHADER,
-            res[1]
-          );
-          this.program = gl.createProgram();
-
-          gl.attachShader(this.program, vertexShader);
-          gl.attachShader(this.program, fragmentShader);
-
-          gl.linkProgram(this.program);
-          if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
-            const Buf = gl.getProgramInfoLog(this.program);
-            reject(Buf);
-          } else this.getInfo(gl);
-          resolve(this.program);
-        });
-        //.then((prg) => (this.program = prg));
-      });
-      const a = gl.getParameter(gl.UNIFORM_BUFFER_OFFSET_ALIGNMENT);
-      this.pass = pass;
-    } else {
-      /*
-      const vertexShader = ShaderUploadToGL(gl, gl.VERTEX_SHADER, res[0]);
-      const fragmentShader = ShaderUploadToGL(gl, gl.FRAGMENT_SHADER, res[1]);
-      this.program = gl.createProgram();
-
-      gl.attachShader(this.program, vertexShader);
-      gl.attachShader(this.program, fragmentShader);
-
-      gl.linkProgram(this.program);
-      if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
-        const Buf = gl.getProgramInfoLog(this.program);
-        reject(Buf);
-      } else this.getInfo(gl);
-      resolve(this.program);*/
+  constructor(gl, allShd = null, pass) {
+    this.pass = pass;
+    if (allShd != null) {
+      const shd = this.search(allShd, pass);
+      if (shd == null) allShd.push(this);
+      else {
+        this.info = shd.info;
+        this.program = shd.program;
+        this.isLoad = shd.isLoad;
+        this.isCreate = shd.isCreate;
+        return;
+      }
     }
+    this.load(gl, pass);
+  }
+  load(gl, pass) {
+    this.program = new Promise((resolve, reject) => {
+      const vs = getTextFromFile(pass + "/vert.glsl");
+      const fs = getTextFromFile(pass + "/frag.glsl");
+      Promise.all([vs, fs]).then((res) => {
+        this.isLoad = true;
+        const vertexShader = ShaderUploadToGL(gl, gl.VERTEX_SHADER, res[0]);
+        const fragmentShader = ShaderUploadToGL(gl, gl.FRAGMENT_SHADER, res[1]);
+        this.program = gl.createProgram();
+
+        gl.attachShader(this.program, vertexShader);
+        gl.attachShader(this.program, fragmentShader);
+
+        gl.linkProgram(this.program);
+        if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
+          const Buf = gl.getProgramInfoLog(this.program);
+          reject(Buf);
+        } else this.getInfo(gl);
+        this.isCreate = true;
+        resolve(this.program);
+      });
+    });
+  }
+  search(allShd, pass) {
+    allShd.forEach((shd) => {
+      if (shd.pass == pass) return shd;
+    });
+    return null;
   }
   apply(gl) {
-    gl.useProgram(this.program);
+    if (this.isCreate) gl.useProgram(this.program);
   }
   getInfo(gl) {
     // Fill shader attributes info
@@ -91,13 +92,6 @@ class _shader {
         type: info.type,
         size: info.size,
         loc: gl.getUniformLocation(this.program, info.name),
-        /*
-        off: getActiveUniformBlockParameter(
-          this.program,
-          uniformBlockIndex,
-          info.name
-        ),
-        */
       };
     }
     // Fill shader uniform blocks info
@@ -127,17 +121,22 @@ class _shader {
           gl.UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES
         ),
         uNames: [],
+        uniforms: [],
       };
       this.info.uniformBlocks[info].uOffset = gl.getActiveUniforms(
         this.program,
         this.info.uniformBlocks[info].uIndex,
         gl.UNIFORM_OFFSET
       );
-      for (let i = 0; i < this.info.uniformBlocks[info].uIndex.length; i++)
-        this.info.uniformBlocks[info].uNames[i] = gl.getActiveUniform(
-          this.program,
-          this.info.uniformBlocks[info].uIndex[i]
-        ).name;
+      for (let j = 0; j < this.info.uniformBlocks[info].uIndex.length; j++) {
+        this.info.uniformBlocks[info].uniforms[j] =
+          this.info.uniforms[
+            gl.getActiveUniform(
+              this.program,
+              this.info.uniformBlocks[info].uIndex[j]
+            ).name
+          ];
+      }
     }
   }
 }
