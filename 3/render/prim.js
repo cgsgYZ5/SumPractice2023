@@ -21,21 +21,33 @@ class _prim {
   IB = null;
   numOfV;
 
-  constructor(gl, type, V, I, mtl) {
+  constructor(gl, type, V, I, mtl = null) {
     if (type == "triangle strip") this.type = gl.TRIANGLE_STRIP;
     else if (type == "triangle") this.type = gl.TRIANGLES;
     else this.type = gl.POINTS;
 
     this.mtl = mtl;
-
-    if (mtl.shd.isLoad) {
-      this.loadV(gl, V, I, mtl);
-      this.isCreated = true;
-    } else
-      mtl.shd.program.then(() => {
-        this.loadV(gl, V, I, mtl);
+    if (mtl == null || !mtl.isCreate) {
+      this.error("prim have not material");
+      return;
+    }
+    if (mtl.shd.isLoad)
+      if (mtl.shd.isCreate == false) {
+        this.error("prim have not shader");
+        return;
+      } else {
         this.isCreated = true;
-      });
+        this.loadV(gl, V, I, mtl);
+        return;
+      }
+    mtl.shd.program.then(() => {
+      this.isCreated = true;
+      this.loadV(gl, V, I, mtl);
+    });
+    mtl.shd.program.catch(() => {
+      this.error("prim have not shader");
+      return;
+    });
   }
   draw(mTrans) {
     this.isDraw = true;
@@ -59,20 +71,26 @@ class _prim {
       }
     }
 
+    for (let i = 0; i < mtl.vertData.length; i++)
+      if (
+        V[mtl.vertData[i][0]] == undefined ||
+        V[mtl.vertData[i][0]] == null ||
+        V[mtl.vertData[i][0]].length === 0
+      )
+        V[mtl.vertData[i][0]] = undefined;
+
     for (let i = 0; i < n; i++)
-      for (let j = 0; j < massIndex.length; j++)
-        for (let k = 0; k < mtl.vertData[j][1]; k++)
+      for (let j = 0; j < massIndex.length; j++) {
+        if (V[mtl.vertData[j][0]] == undefined) continue;
+        for (let k = 0; k < mtl.vertData[j][1]; k++) {
           Vert.push(V[mtl.vertData[j][0]][massIndex[j]++]);
+        }
+      }
 
     return Vert;
   }
 
-  loadV(gl, V, I, mtl) {
-    if (mtl.isCreated == false) {
-      console.log("prim is not create becouse material");
-      this.isCreated = false;
-      return;
-    }
+  loadV(gl, V = null, I = null, mtl) {
     if (I == undefined || I == null) {
       this.numOfV = V.length;
     } else this.numOfV = I.length;
@@ -80,15 +98,25 @@ class _prim {
     this.VA = gl.createVertexArray();
     gl.bindVertexArray(this.VA);
 
-    if (typeof V == "object") V = this.convert(V, mtl);
-    if (V != undefined && V != null)
-      this.VB = buffer(gl, gl.ARRAY_BUFFER, new Float32Array(V));
+    if (typeof V == "object") {
+      for (let i = 0; i < mtl.vertData.length; i++)
+        if (
+          V[mtl.vertData[i][0]] == undefined ||
+          V[mtl.vertData[i][0]] == null ||
+          V[mtl.vertData[i][0]].length === 0
+        ) {
+          console.log(`in V massive no ${mtl.vertData[i][0]}`);
+          mtl.allVertDataSize -= mtl.vertData[i][1];
+        }
+      V = this.convert(V, mtl);
+    }
+    if (V != null) this.VB = buffer(gl, gl.ARRAY_BUFFER, new Float32Array(V));
     else {
-      this.isCreated = false;
-      console.log("have not V in prim creating");
+      this.error("have V in prim creating");
+      return;
     }
 
-    if (I != undefined && I != null)
+    if (I != null)
       this.IB = buffer(gl, gl.ELEMENT_ARRAY_BUFFER, new Int16Array(I));
 
     let off = 0;
@@ -108,10 +136,16 @@ class _prim {
           off += mtl.vertData[i][1] * 4;
           gl.enableVertexAttribArray(loc);
           break;
-        }
-        alert("shader have not Pos but material patern have");
+        } else if (j == admisName[mtl.vertData[i][0]].length)
+          console.log(
+            `shader have ${mtl.vertData[i][0]} but material patern have`
+          );
       }
     }
+  }
+  error(Buf = null) {
+    this.isCreated = false;
+    if (Buf != null) console.log(Buf);
   }
 }
 

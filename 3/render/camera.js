@@ -105,7 +105,7 @@ class _camera {
       Elevator = (180 / Math.PI) * Math.atan2(SinT, CosT),
       Wp = this.projSize,
       Hp = this.projSize,
-      koef1 = ((Dist - 1) * (Dist - 1)) / (18 * Dist),
+      koef1 = 1,
       koef2 = 1 /*sqrt((Dist - 1) * (Dist - 1) * (Dist - 1)) / (18 * Dist)*/,
       sx = 0,
       sy = 0,
@@ -126,7 +126,7 @@ class _camera {
       -speed *
       ((((input.mButton[0] == 1) * 500 * input.mdy) / (1 + this.frameH)) * 2 +
         ((input.keys["ArrowUp"] == 1) - (input.keys["ArrowDown"] == 1)) *
-          (15 + 45 * isShift));
+          (15 + 10 * isShift));
 
     Elevator = Math.min(179.9, Elevator);
     Elevator = Math.max(0.1, Elevator);
@@ -135,7 +135,7 @@ class _camera {
       time *
       isControl *
       koef1 *
-      (-input.mdz * (1 + 25 * isShift) +
+      (-input.mdz * (1 + 5 * isShift) +
         (8 + 25 * isShift) *
           ((input.keys["PageUp"] == 1) - (input.keys["PageDown"] == 1)));
 
@@ -162,7 +162,7 @@ class _camera {
     let a = matr()
       .matrMulmatr(matr().rotateX(Elevator), matr().rotateY(Azimuth))
       .mul(matr().translate(this.at))
-      .RRansform(vec3(0, Dist, 0));
+      .pointTransform(vec3(0, Dist, 0));
     this.set(
       matr()
         .matrMulmatr(matr().rotateX(Elevator), matr().rotateY(Azimuth))

@@ -17,84 +17,93 @@
       import { matr } from "./math/matr.js";
       import { vec3 } from "./math/vec3.js";
       import { getTextFromFile } from "./tools/textload.js";
+      import { avtoNormal } from "./tools/avtonormal.js";
       import { vertConvert } from "./tools/vertConvert.js";
 
       window.addEventListener("load", () => {
         let sys = system("glCanvas");
         let mtl = sys.render.mtlCreate(
           "./bin/shaders/3d",
-          ["P", { P: 3, T: 2 }],
-
-          { Ka: [1, 1, 1], Kd: [1, 2, 3], Ks: [90, 12, 45], Ph: 1 },
-
+          ["P", "N", { P: 3, N: 3 }],
           [
-            "uSampler1",
-            "uSampler2",
+            "Ka4",
+            "Kd4",
+            "Ks4",
+            "Ph",
             {
-              uSampler1: "bin/textures/M.bmp",
-              uSampler2: "bin/textures/D1.bmp",
+              Ka4: [0.1, 0.1, 0.1, -1],
+              Kd4: [1, 1, 1, -1],
+              Ks4: [0.7, 0.7, 0.7],
+              Ph: 40,
             },
-          ]
-        );
-        let mtl2 = sys.render.mtlCreate(
-          "./bin/shaders/3d",
-          ["P", { P: 3 }],
-
-          {
-            Ka: [1, 1, 1],
-            Kd: [1, 2, 3],
-            Ks: [90, 12, 45],
-            Ph: 1,
-            Tex: [0, 0],
-          },
+          ],
           null
         );
+
         let prim;
-        let prim2;
 
         getTextFromFile("./coords/tetrahedron.txt").then((res) => {
           let primCreateMass = vertConvert(res);
+          primCreateMass[0]["N"] = avtoNormal(
+            primCreateMass[0].P,
+            primCreateMass[1]
+          );
           prim = sys.render.primCreate(
             "triangle",
             primCreateMass[0],
             primCreateMass[1],
             mtl
           );
-          prim.draw(matr().translate(vec3(2, 0, 0)));
+          prim.draw(matr().translate(vec3(8, 0, 0)));
         });
         getTextFromFile("./coords/hexahedron.txt").then((res) => {
           let primCreateMass = vertConvert(res);
-          prim2 = sys.render.primCreate(
+          primCreateMass[0]["N"] = avtoNormal(
+            primCreateMass[0].P,
+            primCreateMass[1]
+          );
+          prim = sys.render.primCreate(
             "triangle",
             primCreateMass[0],
             primCreateMass[1],
-            mtl2
+            mtl
           );
-          prim2.draw(matr().translate(vec3(-2, 0, 0)));
+          prim.draw(matr().translate(vec3(6, 0, 0)));
         });
         getTextFromFile("./coords/octahedron.txt").then((res) => {
           let primCreateMass = vertConvert(res);
-          prim2 = sys.render.primCreate(
+          primCreateMass[0]["N"] = avtoNormal(
+            primCreateMass[0].P,
+            primCreateMass[1]
+          );
+          prim = sys.render.primCreate(
             "triangle",
             primCreateMass[0],
             primCreateMass[1],
-            mtl2
+            mtl
           );
-          prim2.draw(matr());
+          prim.draw(matr().translate(vec3(4, 0, 0)));
+        });
+        getTextFromFile("./coords/icosahedron.txt").then((res) => {
+          let primCreateMass = vertConvert(res);
+          primCreateMass[0]["N"] = avtoNormal(
+            primCreateMass[0].P,
+            primCreateMass[1]
+          );
+          prim = sys.render.primCreate(
+            "triangle",
+            primCreateMass[0],
+            primCreateMass[1],
+            mtl
+          );
+          prim.draw(matr());
         });
 
-        const def = vec3(0, 0, 3);
-        let loc = vec3(0, 0, 3);
-
         const draw = () => {
-          /*
-                sys.render.camera.set(loc, vec3(0), vec3(0, 1, 0));
-                
-                loc = matr().rotateY(sys.render.timer.globalTime / 15 * 360).pointTransform(def);
-                */
           sys.render.start();
 
           sys.render.end();
+
           window.requestAnimationFrame(draw);
         };
         draw();

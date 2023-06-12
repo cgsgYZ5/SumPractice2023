@@ -51,6 +51,9 @@ class _vec3 {
       this.x * vec.y - this.y * vec.x
     );
   }
+  unpack() {
+    return [this.x, this.y, this.z];
+  }
 }
 
 export function vec3(...arg) {

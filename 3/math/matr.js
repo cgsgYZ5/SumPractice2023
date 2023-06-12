@@ -241,6 +241,13 @@ class _matr {
         this.m[3][2]
     );
   }
+  vecTransform(vec) {
+    return vec3(
+      vec.x * this.m[0][0] + vec.y * this.m[1][0] + vec.z * this.m[2][0],
+      vec.x * this.m[0][1] + vec.y * this.m[1][1] + vec.z * this.m[2][1],
+      vec.x * this.m[0][2] + vec.y * this.m[1][2] + vec.z * this.m[2][2]
+    );
+  }
   rotateX(angle) {
     const AngleInDegree = (angle * Math.PI) / 180;
     this.m[1][1] = this.m[2][2] = Math.cos(AngleInDegree);
@@ -300,31 +307,6 @@ class _matr {
     ];
     return this;
   } /* End of 'MatrOrtho' function */
-  RRansform(V) {
-    let w =
-      V.x * this.m[0][3] +
-      V.y * this.m[1][3] +
-      V.z * this.m[2][3] +
-      this.m[3][3];
-
-    return vec3(
-      (V.x * this.m[0][0] +
-        V.y * this.m[1][0] +
-        V.z * this.m[2][0] +
-        this.m[3][0]) /
-        w,
-      (V.x * this.m[0][1] +
-        V.y * this.m[1][1] +
-        V.z * this.m[2][1] +
-        this.m[3][1]) /
-        w,
-      (V.x * this.m[0][2] +
-        V.y * this.m[1][2] +
-        V.z * this.m[2][2] +
-        this.m[3][2]) /
-        w
-    );
-  } // End of 'transform' function
 }
 
 export function matr(...arg) {

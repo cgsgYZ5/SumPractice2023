@@ -9,8 +9,9 @@ function ShaderUploadToGL(gl, type, source) {
 
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
     const Buf = gl.getShaderInfoLog(shader);
+    console.log("shader is not compieled");
     console.log(Buf);
-    alert("!?!??!?!");
+    return null;
   }
 
   return shader;
@@ -45,20 +46,32 @@ class _shader {
       const fs = getTextFromFile(pass + "/frag.glsl");
       Promise.all([vs, fs]).then((res) => {
         this.isLoad = true;
+
+        let errorFlag = false;
         const vertexShader = ShaderUploadToGL(gl, gl.VERTEX_SHADER, res[0]);
         const fragmentShader = ShaderUploadToGL(gl, gl.FRAGMENT_SHADER, res[1]);
-        this.program = gl.createProgram();
+        if (vertexShader == null || fragmentShader == null) errorFlag = true;
+        else {
+          this.program = gl.createProgram();
 
-        gl.attachShader(this.program, vertexShader);
-        gl.attachShader(this.program, fragmentShader);
+          gl.attachShader(this.program, vertexShader);
+          gl.attachShader(this.program, fragmentShader);
 
-        gl.linkProgram(this.program);
-        if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
-          const Buf = gl.getProgramInfoLog(this.program);
-          reject(Buf);
-        } else this.getInfo(gl);
-        this.isCreate = true;
-        resolve(this.program);
+          gl.linkProgram(this.program);
+          if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
+            const Buf = gl.getProgramInfoLog(this.program);
+            errorFlag = true;
+          } else {
+            this.getInfo(gl);
+            this.isCreate = true;
+            resolve(null);
+          }
+        }
+        if (errorFlag) {
+          this.isCreate = false;
+          this.program = null;
+          reject(null);
+        }
       });
     });
   }

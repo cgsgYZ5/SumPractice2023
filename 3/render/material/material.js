@@ -78,13 +78,20 @@ class _material {
       }
     }
 
-    const loadMtlUbo = () => {
-      if (!this.shd.isCreate) {
-        this.isCreate = false;
-        console.log("materia is not created");
-        return;
+    this.ubo.push([uboPrimName, ubo(gl, 48, 0)]);
+
+    if (userUbo != null && userUbo != undefined) {
+      for (let i = 0; i < userUbo.length - 1; i++) {
+        if (
+          userUbo.at(-1)[userUbo[i]] != undefined &&
+          userUbo.at(-1)[userUbo[i]] != null
+        ) {
+          this.ubo.push([userUbo[i], userUbo.at(-1)[userUbo[i]]]);
+        }
       }
-      if (this.isCreate == false) return;
+    }
+
+    const loadMtlUbo = () => {
       if (this.shd.info.uniformBlocks[uboMtlName] == undefined) return;
 
       /* material ubo create */
@@ -98,23 +105,30 @@ class _material {
         i++
       ) {
         let uniform = this.shd.info.uniformBlocks[uboMtlName].uniforms[i];
-        if (mtlData[uniform.name] != undefined) {
-          if (typeof mtlData[uniform.name] == "object")
-            mtlMas.push(...mtlData[uniform.name]);
-          else mtlMas.push(mtlData[uniform.name]);
-          continue;
-        }
-        for (let k = texCh; k < this.tex.length; k++) {
-          if (uniform.name == defTexFlagShdName + k) {
-            mtlMas.push(this.tex[k][1].isLoad);
-            texindex.push([i, k]);
+        if (mtlData != null)
+          for (let j = 0; j < mtlData.length; j++)
+            if (mtlData[j] === uniform.name) {
+              if (typeof mtlData.at(-1)[uniform.name] == "object")
+                mtlMas.push(...mtlData.at(-1)[uniform.name]);
+              else mtlMas.push(mtlData.at(-1)[uniform.name]);
+              uniform = null;
+              break;
+            }
+        if (uniform == null) continue;
+        for (let j = texCh; j < this.tex.length; j++) {
+          if (uniform.name == defTexFlagShdName + j) {
+            mtlMas.push(this.tex[j][1].isLoad);
+            texindex.push([i, j]);
             texCh++;
             uniform = null;
             break;
           }
         }
         if (uniform != null) {
-          for (let j = 0; j < uniform.size; j++) mtlMas.push(-1);
+          if (uniform.type == gl.FLOAT_VEC3 || uniform.type == gl.INT_VEC3)
+            for (let j = 0; j < 3; j++) mtlMas.push(-1);
+          else if (uniform.type == gl.FLOAT || uniform.type == gl.INT)
+            mtlMas.push(-1);
         }
       }
       if (mtlMas != undefined) {
@@ -132,23 +146,21 @@ class _material {
       }
     };
 
-    if (this.shd.isLoad) {
-      loadMtlUbo();
-    } else this.shd.program.then(() => loadMtlUbo());
-
-    this.ubo.push([uboPrimName, ubo(gl, 48, 0)]);
-
-    if (userUbo != null && userUbo != undefined) {
-      for (let i = 0; i < userUbo.length - 1; i++) {
-        if (
-          userUbo.at(-1)[userUbo[i]] != undefined &&
-          userUbo.at(-1)[userUbo[i]] != null
-        ) {
-          this.ubo.push([userUbo[i], userUbo.at(-1)[userUbo[i]]]);
-        }
+    if (!this.isCreate) console.log("materia is not created");
+    else {
+      if (this.shd.isLoad && this.shd.isCreate) {
+        loadMtlUbo();
+      } else if (this.shd.isLoad && !this.shd.isCreate) {
+        this.isCreate = false;
+        console.log("materia is not created");
+      } else {
+        this.shd.program.then(() => loadMtlUbo());
+        this.shd.program.catch(() => {
+          this.isCreate = false;
+          console.log("materia is not created");
+        });
       }
     }
-    if (!this.isCreate) console.log("materia is not created");
   }
   apply() {
     if (!this.isCreate) return;
