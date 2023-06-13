@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>My first page</title>
+    <link rel="stylesheet" href="styles.css" />
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+  </head>
+
+  <body>
+    <a href="../../index.html">back</a>
+    <p>FPS:</p>
+    <p id="fps">30</p>
+    <canvas class="canva" id="glCanvas" width="1000" height="1000"></canvas>
+    <script type="module" src="./main.js"></script>
+    <form name="slide" method="get">
+      <input id="slider1" type="range" min="-60" max="60" step="0.01" />
+      <input id="button1" type="button" />
+    </form>
+  </body>
+</html>
