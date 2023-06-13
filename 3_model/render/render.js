@@ -10,8 +10,6 @@ import { ubo } from "./material/buffer.js";
 import { texture } from "./material/texture.js";
 import { shader } from "./material/shader.js";
 
-import { getTextFromFile } from "../tools/textload.js";
-
 /* Render module */
 class _render {
   allPrim = [];
@@ -92,6 +90,12 @@ class _render {
           this.gl,
           0,
           new Float32Array([...this.timer.allToMass()])
+        );
+      else if (ubo[0] == "camera")
+        ubo[1].update(
+          this.gl,
+          0,
+          new Float32Array([...this.camera.allToMass()])
         );
     });
     prim.mtl.apply();
