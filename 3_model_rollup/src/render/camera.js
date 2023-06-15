@@ -168,6 +168,26 @@ class _camera {
       vec3(0, 1, 0)
     );
   }
+  allToMass() {
+    return [
+      // this.projSize,
+      // this.projDist,
+      // this.projFarClip,
+
+      // ...this.matrVP.unpack(),
+      // ...this.matrView.unpack(),
+      // ...this.matrProj.unpack(),
+
+      ...this.loc.unpack(),
+      // ...this.at.unpack(),
+      // ...this.dir.unpack(),
+      // ...this.up.unpack(),
+      // ...this.right.unpack(),
+
+      // this.frameW,
+      // this.frameH,
+    ];
+  }
 }
 
 export function camera(...arg) {

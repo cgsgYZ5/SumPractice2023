@@ -48,12 +48,12 @@ class _prim {
     });
     mtl.shd.program.catch(() => {
       this.error("prim have not shader");
-      return;
+      return this;
     });
     return this;
   }
   loadObjFromFile(gl, filename, type, mtl) {
-    getTextFromFile(filename).then((text) => {
+    return getTextFromFile(filename).then((text) => {
       this.loadObjFromText(gl, text, type, mtl);
     });
   }

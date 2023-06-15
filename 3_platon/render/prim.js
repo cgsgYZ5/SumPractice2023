@@ -26,6 +26,7 @@ class _prim {
   create(gl, type, V, I, mtl = null) {
     if (type == "triangle strip") this.type = gl.TRIANGLE_STRIP;
     else if (type == "triangle") this.type = gl.TRIANGLES;
+    else if (type == "line_strip") this.type = gl.LINE_STRIP;
     else this.type = gl.POINTS;
 
     this.mtl = mtl;
@@ -54,7 +55,7 @@ class _prim {
   }
   loadObj(gl, filename, type, mtl) {
     return getTextFromFile(filename).then((text) => {
-      if (text == undefined || text == null || text == "") reject("error");
+      if (text == undefined || text == null || text == "") return;
       const data = text.replace("\r").split("\n");
       const V = [],
         I = [];
@@ -127,10 +128,6 @@ class _prim {
   }
 
   loadV(gl, V = null, I = null, mtl) {
-    if (I == undefined || I == null) {
-      this.numOfV = V.length;
-    } else this.numOfV = I.length;
-
     this.VA = gl.createVertexArray();
     gl.bindVertexArray(this.VA);
 
@@ -146,6 +143,12 @@ class _prim {
         }
       V = this.convert(V, mtl);
     }
+    if (I == undefined || I == null || I.length == 0) {
+      {
+        I = null;
+        this.numOfV = V.length;
+      }
+    } else this.numOfV = I.length;
     if (V != null) this.VB = buffer(gl, gl.ARRAY_BUFFER, new Float32Array(V));
     else {
       this.error("have V in prim creating");

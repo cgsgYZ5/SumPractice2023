@@ -53,8 +53,8 @@ class _shader {
       this.isCreate = false;
       this.program = null;
       console.log(Buf);
-      return null;
     }
+    return this;
   }
   loadFromFile(gl, pass) {
     this.pass = pass;
@@ -95,6 +95,7 @@ class _shader {
         }
       });
     });
+    return this;
   }
   search(allShd, pass) {
     allShd.forEach((shd) => {

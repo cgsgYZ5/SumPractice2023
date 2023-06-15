@@ -24,25 +24,25 @@
         let sys = system("glCanvas");
         let gl = sys.drawContext.gl;
         let uboTime = sys.render.uboCreate(16, 2);
+        let uboCamera = sys.render.uboCreate(16, 3); //80
         let mtl = sys.render.mtlCreate(
-          "./bin/shaders/3d",
+          ".\\bin\\shaders\\3d",
           ["P", "N", { P: 3, N: 3 }],
           [
             "Ka4",
             "Kd4",
-            "Ks4",
+            "Ks",
             "Ph",
             {
               Ka4: [0.1, 0.1, 0.1, -1],
               Kd4: [1, 1, 1, -1],
-              Ks4: [0.7, 0.7, 0.7],
+              Ks: [0.7, 0.7, 0.7],
               Ph: 40,
             },
           ],
           null,
-          ["time", { time: uboTime }]
+          ["time", "camera", { time: uboTime, camera: uboCamera }]
         );
-
         let prim;
 
         getTextFromFile("./coords/tetrahedron.txt").then((res) => {
@@ -87,7 +87,19 @@
           sys.render
             .prim()
             .create(gl, "triangle", primCreateMass[0], primCreateMass[1], mtl)
-            .draw(matr());
+            .draw(matr().translate(vec3(2, 0, 0)));
+        });
+        getTextFromFile("./coords/dodecahedron.txt").then((res) => {
+          let primCreateMass = vertConvert(res);
+          primCreateMass[0]["N"] = avtoNormal(
+            primCreateMass[0].P,
+            primCreateMass[1]
+          );
+
+          sys.render
+            .prim()
+            .create(gl, "triangle", primCreateMass[0], primCreateMass[1], mtl)
+            .draw(matr().translate(vec3(-2, 0, 0)));
         });
         /*
         let prim1 = sys.render.prim();

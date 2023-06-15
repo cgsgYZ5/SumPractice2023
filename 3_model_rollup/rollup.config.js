@@ -6,7 +6,7 @@ const commonjs = require("@rollup/plugin-commonjs");
 
 const glslify = require("rollup-plugin-glslify");
 
-const uglify = require("rollup-plugin-uglify-es");
+const terser = require("@rollup/plugin-terser");
 
 module.exports = {
   input: "src/main.js",
@@ -25,13 +25,16 @@ module.exports = {
         "src/*.json",
         "src/coords/*.txt",
         "src/coords/*.obj",
-        "src/binshaders/3d/*.*",
+        "src/bin/shaders/**",
       ],
     }),
     resolve({ jsnext: true, main: true, browser: true }),
     commonjs(),
-    babel({ babelHelpers: "bundled", exclude: ["node_module/**"] }),
-    uglify(),
+    babel({
+      babelHelpers: "bundled",
+      exclude: ["node_module/**", "src/coords/**", "src/bin/**"],
+    }),
+    terser(),
   ],
 };
 // node_modules\.bin\rollup.cmd -c

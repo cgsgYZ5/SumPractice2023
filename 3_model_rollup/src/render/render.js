@@ -41,7 +41,7 @@ class _render {
   texCreate(...arg) {
     return texture(this.gl, this.allTex, ...arg);
   }
-  shader(...arg) {
+  shdCreate(...arg) {
     return shader(this.gl, this.allShd, ...arg);
   }
   mtlCreate(...arg) {
@@ -90,6 +90,12 @@ class _render {
           this.gl,
           0,
           new Float32Array([...this.timer.allToMass()])
+        );
+      else if (ubo[0] == "camera")
+        ubo[1].update(
+          this.gl,
+          0,
+          new Float32Array([...this.camera.allToMass()])
         );
     });
     prim.mtl.apply();

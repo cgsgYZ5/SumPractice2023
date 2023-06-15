@@ -14,6 +14,21 @@ uniform primMaterial {
 uniform time {
   float globalTime, localTime, globalDeltaTime, localDeltaTime, isPause;
 };
+uniform camera {
+//   float projSize,
+//   projDist,
+//   projFarClip;
+// mat4 matrVP,
+//   matrView,
+//   matrProj;
+  vec3 loc;
+//   at,
+//   dir,
+//   up,
+//   right;
+// float   frameW,
+//   frameH;
+};
 #define Ka Ka4.rgb
 #define Kd Kd4.rgb
 
@@ -27,7 +42,16 @@ in vec2 TexCoord;
 in vec3 DrawNormal;
 
 */
-
+vec3 shade() {
+  vec3 L = normalize(vec3(5.0 * sin(localTime), 5, 5.0 * cos(localTime)));
+  vec3 LC = vec3(0.1, 0.2, 0.7);
+  vec3 V = normalize(DrawPos - loc);
+  vec3 N = DrawNormal;//vec3(0, 1, 0);
+    //N = faceforward(N, V, N);
+  return vec3(min(vec3(0.1), Ka) +
+    max(0.05, dot(N, L)) * Kd * LC +
+    pow(max(0.05, dot(reflect(V, N), L)), Ph) * Ks * LC);
+}
 void main(void) {
   out_color = vec4(1, 0.6, 0, 1);
 
@@ -44,12 +68,13 @@ void main(void) {
   if(isTex1 == 1.)
     if(TexCoords.x < 0.5 && TexCoords.y > 0.5) {
       col = texture(uSampler2, vec2(TexCoords.x, TexCoords.y * 2.0 - 1.0)).rgb;
-    } else
+    } else {
       col = texture(uSampler2, vec2(TexCoords.x * 2.0 - 1.0, TexCoords.y)).rgb;
+    }
   out_color = vec4(col, 1);
 
   if(IsTex0 == -1. && isTex1 == -1.) {
-    vec3 L = normalize(+vec3(cos(localTime), 1, sin(localTime)));
+    vec3 L = normalize(-vec3(cos(localTime), 1, sin(localTime)));
     vec3 LC = vec3(1, 1, 1);
     vec3 V = normalize(DrawPos - 3. * vec3(cos(localTime), 1, sin(localTime)));
     vec3 N = DrawNormal;
@@ -66,7 +91,8 @@ void main(void) {
 
     out_color = vec4(col, 1);
   }
-
+  col = shade();
+  out_color = vec4(pow(col.x, 1. / 2.2), pow(col.y, 1. / 2.2), pow(col.z, 1. / 2.2), 1);
   //out_color = vec4(col, 1);
   //out_color = vec4(DrawPos, 1);
 

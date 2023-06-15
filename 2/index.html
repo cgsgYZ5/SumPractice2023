@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-
-<head>
-    <meta charset="UTF-8">
+<html>
+  <head>
+    <meta charset="UTF-8" />
     <title>My first page</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
 
-<body>
+  <body>
     <a href="../index.html">back</a>
-        <!--
+    <!--
 
         //import { PauseEvent } from './main.js' 
         //  import * as lib from './main.js' 
@@ -34,17 +34,22 @@
         document.addEventListener("mouseup", MouseUp);
         document.addEventListener("mousedown", MouseDown);
         -->
-    <canvas id = "glCanvas" width="1000%" height="1000%"></canvas>
+    <canvas id="glCanvas" width="1000%" height="1000%"></canvas>
     <script type="module">
-        import * as gl from "./main.js";
+      import * as gl from "./main.js";
 
-        window.addEventListener("load", () => {
-            gl.InitGL();
-        });
+      window.addEventListener("load", () => {
+        gl.InitGL();
+      });
     </script>
-    <form name="slide" method="get"> 
-        <input id="slider1" type="range" min="-60" max="60" step="0.01"/>
-        <input id="button1" type="button"/>
+    <form name="slide" method="get">
+      <input id="button1" type="button" />
+
+      <input name="contact" id="ch1" , type="radio" value="mond" checked />
+      <label for="contactChoice3">Mond</label>
+      <input name="contact" id="ch2" , type="radio" value="jul" />
+      <label for="contactChoice3">Jul</label>
+      <input id="submit1" type="submit" />
     </form>
     <!-- 
     <script type="module">
@@ -69,6 +74,5 @@
             }
         </script>
         -->
-</body>
-
+  </body>
 </html>
