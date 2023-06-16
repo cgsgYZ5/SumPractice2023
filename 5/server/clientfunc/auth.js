@@ -1,14 +1,25 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
-const user = require("../mongodb");
+const users = require("../users.js");
 
 exports.signUp = async (req, res, next) => {
-  let input = JSON.parse(req.body);
-  let logInStatus = (await user.getData("Users", { name: input.name }))[0];
-  if (logInStatus != null) throw "User name ever have been taken";
+  let { name, password } = req.body;
+  let user = await users.find(name);
+  if (user[0] != null)
+    res.status(401).json({
+      message: "User name ever have been taken",
+    });
   else {
-    logInStatus = await user.addData("Users", JSON.parse(req.body));
-    if (logInStatus) throw "User basa not work";
-    else return logInStatus._id;
+    user = await users.registrate(
+      name,
+      password,
+      name == "admin" ? "admin" : undefined
+    );
+    if (!user.status)
+      res.status(400).json({
+        message: "User basa not work",
+      });
+    else res.status(201).json(user.id);
   }
 };
 exports.logIn = async (req, res, next) => {

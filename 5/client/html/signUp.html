@@ -39,7 +39,9 @@
             }),
             headers: { "Content-Type": "application/json" },
           });
-          document.cookie = JSON.stringify(res);
+          const data = await res.json();
+          if (res.status == 401 || res.status == 400) throw data.messange;
+          document.cookie = JSON.stringify(data);
           location.assign("./userHomePage.html");
         } catch (err) {
           console.log(err);

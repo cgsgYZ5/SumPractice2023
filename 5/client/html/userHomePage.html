@@ -7,36 +7,17 @@
       .link {
         font-size: 150%;
       }
-      .button {
-        background-color: #4caf50; /* Green */
-        border: none;
-        color: white;
-        padding: 15px 32px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 16px;
-        margin: 4px 2px;
-        cursor: pointer;
-      }
-
-      .button1 {
-        width: 250px;
-        height: 50px;
-      }
     </style>
   </head>
   <body>
-    <script src="logIn.js" type="module"></script>
-    <input type="text" id="name" /><br /><br />
-    <input type="text" id="password" />
+    <p id="selfname">You login by</p>
+    <input type="button" class="button1" id="button" tabindex="logout" />
     <br />
     <br />
-    <input type="button" class="button1" id="button" />
-    <br />
-    <br />
-    <a class="link" href="../signUp/signUp.html">Sign up</a>
-    <br />
-    <a href="../index.html" aria-setsize="80%">back</a>
+    <input type="text" />
+    <p><textarea name="comment" cols="100%" rows="100%"></textarea></p>
+
+    <!-- <script src="/socket.io/socket.io.js"></script> -->
+    <script type="module" src="socket.js"></script>
   </body>
 </html>
