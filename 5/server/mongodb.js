@@ -29,8 +29,8 @@ async function baseAddData(nameCollection, data) {
   let collection = db.collection(nameCollection);
 
   try {
-    let response = await collection.insertOne(data).toArray();
-    return true;
+    let response = await collection.insertOne(data);
+    return response;
   } catch (err) {
     console.error(err);
     return false;

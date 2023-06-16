@@ -2,29 +2,33 @@
 const user = require("./user.js");
 /* eslint-disable no-undef */
 const http = require("http");
+
 const express = require("express");
-const morgan = require("morgan");
-const { Server } = require("socket.io");
-
-const filename = "Z://SumPractice2023/5/dist/nolog";
-
 const app = express();
-app.use(morgan("combined"));
-app.use(express.static(filename));
-
-//initialize a simple http server
 const server = http.createServer(app);
+
+const { Server } = require("socket.io");
 const io = new Server(server);
 
-const clients = [];
+const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
 
+app.use(morgan("combined"));
+
+app.use(express.json());
+app.use(cookieParser());
+
+app.use("/function", require("./route.js"));
+app.use("/", express.static("../client/html"));
+
+const activeClients = [];
 io.on("connection", (socket) => {
-  clients.push(socket);
+  activeClients.push(socket);
   console.log(`Client connected with id: ${socket.id}`);
   socket.on("MessageToServer", (msg) => {
     const replyMsg = `Message from client: ${socket.id} is ${msg}`;
     console.log(replyMsg);
-    for (client of clients) {
+    for (client of activeClients) {
       if (client === socket) {
         continue;
       }
@@ -33,17 +37,23 @@ io.on("connection", (socket) => {
   });
   socket.on("disconnect", () => {
     console.log(`Client disconnected with id: ${socket.id}`);
-    const index = clients.indexOf(socket);
+    const index = activeClients.indexOf(socket);
     if (index > -1) {
-      clients.splice(index, 1);
+      activeClients.splice(index, 1);
     }
   });
-  socket.on("UserLogIn", (value) => {
-    const logInStatus = user.logIn(value);
+  socket.on("UserLogIn", async (value) => {
+    const logInStatus = await user.logIn(value);
     if (logInStatus === null) value = "no user in base";
     else if (logInStatus === false) value = "incorrect password";
     else value = true;
     socket.emit("LoginStatus", value);
+  });
+  socket.on("UserSignUp", async (value) => {
+    const logInStatus = await user.signUp(value);
+    if (logInStatus != false) value = logInStatus;
+    else value = "error";
+    socket.emit("SignUpStatus", value);
   });
 });
 

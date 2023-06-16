@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build-client": "rollup -c",
+    "build-client1": "rollup -c rollup.configsignUp.js",
+    "build-client2": "rollup -c rollup.configlogIn.js",
     "start-server": "cd dist && node ../server/server.js"
   },
   "author": "",
@@ -12,6 +13,7 @@
   "dependencies": {
     "@rollup/plugin-commonjs": "^25.0.1",
     "@rollup/plugin-node-resolve": "^15.1.0",
+    "cookie-parser": "^1.4.6",
     "express": "^4.18.2",
     "mongodb": "^5.6.0",
     "morgan": "^1.10.0",

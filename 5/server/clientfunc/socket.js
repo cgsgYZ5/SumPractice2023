@@ -22,6 +22,12 @@ async function main() {
       window.location.href = window.location.href + "/";
     } else console.log(value);
   });
+  socket.on("SignUpStatus", (value) => {
+    if (value === true) {
+      console.log("login status is OK");
+      // window.location.href = window.location.href + "/";
+    } else console.log(value);
+  });
   // document.getElementById("id1").onkeyup = (ev) => {
   //   if (ev.code === "Enter") {
   //     const value = document.getElementById("id1").value;
@@ -31,13 +37,6 @@ async function main() {
   //     socket.emit("MessageToServer", value);
   //   }
   // };
-  document.getElementById("button").addEventListener("click", () => {
-    const logindata = {
-      name: document.getElementById("name").value,
-      password: document.getElementById("password").value,
-    };
-    socket.emit("UserLogIn", logindata);
-  });
 }
 
 window.addEventListener("load", (event) => {
