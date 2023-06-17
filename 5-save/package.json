@@ -6,7 +6,6 @@
   "scripts": {
     "build-client1": "rollup -c rollup.configsignUp.js",
     "build-client2": "rollup -c rollup.configlogIn.js",
-    "build-client3": "rollup -c rollup.configsignIn2.js",
     "start-server": "cd dist && node ../server/server.js"
   },
   "author": "",

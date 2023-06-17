@@ -1,7 +1,6 @@
 /* eslint-disable no-undef */
 const base = require("./mongodb.js");
-
-const onlainClients = [];
+const activeClients = require("./mongodb.js");
 /*
 class _user {
   isOnlain = false;
@@ -32,15 +31,15 @@ async function userFindInBase(name) {
 }
 async function userFindActive(name) {
   if (name != undefined) {
-    for (let i = onlainClients.length - 1; i >= 0; i--)
-      if (onlainClients[i].name == name) return onlainClients[i];
+    for (let i = 0; i < activeClients.length; i++)
+      if (activeClients[i].name == name) return activeClients[i];
   }
   return null;
 }
 async function userRegistrate(name, password) {
   let user = await base.addData("Users", {
     name: name,
-    password: password,
+    pasword: password,
   });
 
   if (!user) return false;
@@ -51,5 +50,4 @@ module.exports = {
   findInBase: userFindInBase,
   create: create,
   findActive: userFindActive,
-  onlain: onlainClients,
 };

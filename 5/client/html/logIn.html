@@ -28,25 +28,6 @@
     <a class="link" href="./signUp.html">Sign up</a>
     <br />
     <a href="./index.html" aria-setsize="80%">back</a>
-    <script type="module">
-      document.getElementById("button").addEventListener("click", async () => {
-        const inputData = {
-          name:
-            document.getElementById("name").value == ""
-              ? null
-              : document.getElementById("name").value == "",
-          password:
-            document.getElementById("password").value == ""
-              ? null
-              : document.getElementById("password").value,
-        };
-        try {
-          let res = await fetch("/function/logI n", inputData);
-          if (res == null) return;
-        } catch (err) {
-          console.log(err);
-        }
-      });
-    </script>
+    <script type="module" src="login.js"></script>
   </body>
 </html>

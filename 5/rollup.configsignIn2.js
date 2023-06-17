@@ -2,11 +2,12 @@ const resolve = require("@rollup/plugin-node-resolve");
 const commonjs = require("@rollup/plugin-commonjs");
 
 module.exports = {
-  input: "client/src/client.js",
+  input: "client/src/signup.js",
   output: {
-    file: "client/html/client.js",
+    file: "client/html/signup.js",
     format: "iife",
     sourcemap: "inline",
+    name: "cookie",
   },
   plugins: [
     resolve({

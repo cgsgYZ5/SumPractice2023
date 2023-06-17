@@ -23,21 +23,24 @@ app.use(cookieParser());
 app.use("/function", require("./route.js"));
 app.use("/", express.static("../client/html")); // <-- /logIn.html   === ../client/
 
+let activeClients = [];
+
 io.on("connection", (socket) => {
   console.log(`Client connected with id: ${socket.id}`);
 
   socket.on("userConnect", async (name) => {
     let user = await users.findInBase(name);
     if (user != null) {
-      users.onlain.push(users.create(name, socket));
+      users.create(name, socket);
+      activeClients.push(user);
 
-      await chats.addUser("General", name);
+      chats.addUser("Defoult", name);
     }
   });
   // socket.on("MessageToServer", (msg) => {
   //   const replyMsg = `Message from client: ${socket.id} is ${msg}`;
   //   console.log(replyMsg);
-  //   for (client of users.onlain) {
+  //   for (client of activeClients) {
   //     if (client === socket) {
   //       continue;
   //     }
@@ -46,9 +49,9 @@ io.on("connection", (socket) => {
   // });
   socket.on("disconnect", () => {
     console.log(`Client disconnected with id: ${socket.id}`);
-    const index = users.onlain.indexOf(socket);
+    const index = activeClients.indexOf(socket);
     if (index > -1) {
-      users.onlain.splice(index, 1);
+      activeClients.splice(index, 1);
     }
   });
   socket.on("createChat", (name) => {
@@ -59,8 +62,9 @@ io.on("connection", (socket) => {
     chats.addUser(chatName, userName);
   });
 
-  socket.on("updateChat-Server", (updateStr, chatName) => {
-    chats.update(chatName, socket, updateStr);
+  socket.on("MessageFromUser", (updateStr, chatName) => {
+    for (let i = 0; i < chats.length; i++)
+      if (chats[i].name == chatName) chats[i].textUpdate(socket, updateStr);
   });
 });
 
@@ -69,4 +73,4 @@ server.listen(process.env.PORT || 3000, () => {
   // chats.create("General");
 });
 
-module.exports.onlain = users.onlain;
+module.exports.activeClients = activeClients;
