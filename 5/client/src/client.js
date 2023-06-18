@@ -2,14 +2,14 @@
 import { io } from "socket.io-client";
 import Cookies from "js-cookie";
 
-function createChat(chatName, chText) {
+function createChat(chatName) {
   let button = document.createElement("button");
   let div = document.createElement("div");
 
   let h3 = document.createElement("h3");
   let input = document.createElement("input");
   let p = document.createElement("p");
-  let text = document.createElement("p");
+  let text = document.createElement("div");
 
   button.className = "tablinks";
   button.onclick = function () {
@@ -35,7 +35,7 @@ function createChat(chatName, chText) {
   div.className = "tabcontext";
   div.style.display = "none";
 
-  h3.id = "chName" + chatName;
+  h3.id = "chatName" + chatName;
   h3.innerText = chatName;
 
   input.id = "input" + chatName;
@@ -51,13 +51,16 @@ function createChat(chatName, chText) {
         JSON.stringify(date.getMinutes()) +
         ":" +
         JSON.stringify(date.getSeconds());
-      let updateStr = "\n " + name + " (" + time + ") : " + event.target.value;
+      let updateStr = { name: name, time: time, messange: event.target.value };
       socket.emit(
         "updateChat-Server",
-        updateStr,
-        activeChat.children[0].innerText
+        activeChat.children[0].innerText,
+        updateStr
       );
-      activeChat.children[3].innerText += updateStr;
+      const text = document.getElementById(
+        "text" + activeChat.children[0].innerText
+      );
+      updateChat(text, updateStr);
       event.target.value = "";
     }
   };
@@ -66,7 +69,7 @@ function createChat(chatName, chText) {
   p.innerText = "Messanges:";
 
   text.id = "text" + chatName;
-  text.innerText = chText;
+  text.className = "messangebox";
 
   let chats = document.getElementById("Chats");
   chats.appendChild(div);
@@ -81,15 +84,32 @@ function createChat(chatName, chText) {
   buttons.appendChild(button);
 }
 
-function updateChat(updateStr, chatName) {
-  document.getElementById("place" + chatName).innerText += updateStr;
+function updateChat(text, updateStr) {
+  let p = document.createElement("div");
+  let info = document.createElement("div");
+
+  p.className = "msg";
+  info.className = "info";
+  info.innerText = updateStr.time;
+  p.appendChild(info);
+  if (updateStr.name == name) {
+    p.innerText = "\n " + updateStr.messange + " (" + updateStr.time + ")";
+    p.id = "selfUser";
+  } else {
+    p.id = "otherUser";
+    p.innerText =
+      "\n " +
+      updateStr.name +
+      " (" +
+      updateStr.time +
+      ") : " +
+      updateStr.messange;
+  }
+
+  text.appendChild(p);
 }
 
 const name = Cookies.get("name");
-if (name == undefined) {
-  console.log("Login do`t was");
-  location.assign("./index.html");
-}
 
 let activeChat = null;
 
@@ -103,16 +123,21 @@ async function socketInit() {
     console.log(socket.id);
     socket.emit("userDisconnect", name);
   });
-  socket.on("addToChat-Client", (chName, chText) => {
-    createChat(chName, chText);
+  socket.on("addToChat-Client", (chatName, chatMessange) => {
+    createChat(chatName);
+    const text = document.getElementById("text" + chatName);
+    for (let i = 0; i < chatMessange.length; i++)
+      updateChat(text, chatMessange[i]);
   });
-  socket.on("updateChat-User", (updateStr, chatName) => {
-    let chatText = document.getElementById("text" + chatName);
-    chatText.innerText += updateStr;
+  socket.on("updateChat-User", (chatName, updateStr) => {
+    updateChat(chatName, updateStr);
   });
-  //socket.emit("userConnect", name);
 }
-socketInit();
+if (name == undefined) {
+  console.log("Login do`t was");
+  location.assign("./index.html");
+} else socketInit();
+
 let a = document.getElementById("logout");
 a.addEventListener("click", () => {
   Cookies.remove("name");

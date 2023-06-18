@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build-client1": "rollup -c rollup.configsignUp.js",
-    "build-client2": "rollup -c rollup.configlogIn.js",
-    "build-client3": "rollup -c rollup.configsignIn2.js",
+    "build-client1": "rollup -c rollup.configClient.js",
+    "build-client2": "rollup -c rollup.configLogIn.js",
+    "build-client3": "rollup -c rollup.configSignUp.js",
     "start-server": "cd dist && node ../server/server.js"
   },
   "author": "",

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const base = require("./mongodb.js");
 const users = require("./users.js");
 
@@ -14,8 +15,8 @@ async function create(name) {
   if ((await find("Chats", name)) == null) {
     await base.addData("Chats", {
       name: name,
-      users: null,
-      text: "",
+      users: [],
+      messanges: [],
     });
   }
 }
@@ -28,7 +29,8 @@ async function addUser(chatName, userName) {
     await resp.replaceOne({ name: chatName }, chat);
   }
   let client = await users.findActive(userName);
-  client.socket.emit("addToChat-Client", chatName, chat.text);
+
+  client.socket.emit("addToChat-Client", chatName, chat.messanges.slice(-10));
   return true;
   // let res = await chat
   //   .find({
@@ -46,8 +48,8 @@ async function addUser(chatName, userName) {
   // }
 }
 async function delUser(chatName, userName) {
-  let chat = await base.getDB("Chats");
-  chat.updateOne({ name: chatName }, { $pop: { users: userName } });
+  let resp = await base.getDB("Chats");
+  resp.updateOne({ name: chatName }, { $pop: { users: userName } });
 
   return false;
 }
@@ -56,12 +58,12 @@ async function update(chatName, socketAutor, newtext) {
   let resp = await base.getDB("Chats");
   let chat = await resp.findOne({ name: chatName });
 
-  chat.text += newtext;
+  chat.messanges.push(newtext);
   for (let user of chat.users) {
     let client = await users.findActive(user);
     if (client == null) continue;
     if (client.socket == socketAutor) continue;
-    client.socket.emit("updateChat-User", newtext, chat.name);
+    client.socket.emit("updateChat-User", chat.name, newtext);
   }
   await resp.replaceOne({ name: chatName }, chat);
 }

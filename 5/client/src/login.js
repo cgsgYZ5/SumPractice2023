@@ -20,6 +20,7 @@ import Cookies from "js-cookie";
 
 const name = document.querySelector("#name");
 const password = document.querySelector("#password");
+const error = document.getElementById("textErrorMessange");
 document.getElementById("button").addEventListener("click", async () => {
   try {
     const res = await fetch("/function/logIn", {
@@ -35,6 +36,6 @@ document.getElementById("button").addEventListener("click", async () => {
     Cookies.set("name", name.value);
     location.assign("../userHomePage.html");
   } catch (err) {
-    console.log(err);
+    error.innerText = err;
   }
 });

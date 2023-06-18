@@ -59,7 +59,7 @@ io.on("connection", (socket) => {
     chats.addUser(chatName, userName);
   });
 
-  socket.on("updateChat-Server", (updateStr, chatName) => {
+  socket.on("updateChat-Server", (chatName, updateStr) => {
     chats.update(chatName, socket, updateStr);
   });
 });
