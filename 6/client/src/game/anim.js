@@ -27,7 +27,6 @@ const tank = {
 };
 
 export function initGl() {
-  let b = document.getElementById("canva");
   canvas = document.getElementById("canva");
 
   if (canvas == undefined) {
@@ -58,7 +57,7 @@ void main(){
     in_pos.y * cos(angle) - in_pos.x * sin(angle) + pos.y);
     // cos(angle) + sin(angle),
     // cos(angle)  - sin(angle));
-  gl_Position = vec4(tmp.x / screenSize.x  * 2.0 - 1.0, tmp.y / screenSize.y  * 2.0 - 1.0, 0, 1);
+  gl_Position = vec4(tmp.x / screenSize.x * 2.0 , tmp.y / screenSize.y * 2.0, 0, 1);
   //gl_Position = vec4(tmp.x / 700.0 * 2.0 - 1.0, tmp.y / 500.0 * 2.0 - 1.0, 0, 1);
   texCoord = in_tex;
 }`,

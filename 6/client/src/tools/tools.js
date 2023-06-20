@@ -6,7 +6,7 @@ export function goHome() {
 }
 
 export function logOut(status) {
-  if (status) socket.disconnect();
+  // if (status) socket.disconnect();
   Cookies.remove("name");
   location.assign("../index.html");
 }

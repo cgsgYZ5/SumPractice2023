@@ -79,6 +79,41 @@ io.on("connection", (socket) => {
   socket.on("connectToAwaitingRoom", () => {
     room.addToAwait(socket);
   });
+
+  socket.on("sessionBeginMoveFront", (sessionId) => {
+    session.addAction(socket, sessionId, "moveFront", function () {
+      this.selfObj.info.pos.x += Math.cos(this.angle);
+      this.selfObj.info.pos.y += Math.cos(this.angle);
+    });
+  });
+  socket.on("sessionBeginMoveBack", (sessionId) => {
+    session.addAction(socket, sessionId, "moveBack", function () {
+      this.selfObj.info.pos.x -= Math.cos(this.angle);
+      this.selfObj.info.pos.y -= Math.cos(this.angle);
+    });
+  });
+  socket.on("sessionBeginRotateLeft", (sessionId) => {
+    session.addAction(socket, sessionId, "rotateLeft", function () {
+      this.selfObj.info.angle += 0.089;
+    });
+  });
+  socket.on("sessionBeginRotateRight", (sessionId) => {
+    session.addAction(socket, sessionId, "rotateRight", function () {
+      this.selfObj.info.angle -= 0.089;
+    });
+  });
+  socket.on("sessionStopMoveFront", (sessionId) => {
+    session.delAction(socket, sessionId, "moveFront");
+  });
+  socket.on("sessionStopMoveBack", (sessionId) => {
+    session.delAction(socket, sessionId, "moveBack");
+  });
+  socket.on("sessionStopRotateLeft", (sessionId) => {
+    session.delAction(socket, sessionId, "rotateLeft");
+  });
+  socket.on("sessionStopRotateRight", (sessionId) => {
+    session.delAction(socket, sessionId, "rotateRight");
+  });
   // socket.on("MessageToServer", (msg) => {
   //   const replyMsg = `Message from client: ${socket.id} is ${msg}`;
   //   console.log(replyMsg);
@@ -101,7 +136,6 @@ io.on("connection", (socket) => {
   //   chats.update(chatName, socket, updateStr);
   // });
 });
-
 server.listen(process.env.PORT || 3000, () => {
   console.log(`Server started on port ${server.address().port} :)`);
   // chats.create("General");

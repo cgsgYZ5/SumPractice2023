@@ -16,7 +16,7 @@ async function socketInit() {
   });
   socket.on("error", (...err) => error(...err));
   socket.on("gameConnect", (pos) => {
-    // console.log(socket.id);
+    console.log(socket.id);
     //new createTank(pos);
   });
   socket.on("sessionUpdate", (...args) => drawAll(...args));
@@ -30,11 +30,45 @@ function initUser() {
   if (name == undefined) error("Game ID undefined", "../index.html", "logout");
   if (gameId == undefined) error("Game ID undefined", "../index.html", "home");
 }
+const keys = {};
+const keyDown = (e) => {
+  if (e.code == "KeyW" && !keys[e.code]) {
+    socket.emit("sessionBeginMoveFront", gameId);
+  }
+  if (e.code == "KeyS" && !keys[e.code]) {
+    socket.emit("sessionBeginMoveBack", gameId);
+  }
+  if (e.code == "KeyD" && !keys[e.code]) {
+    socket.emit("sessionBeginRotateLeft", gameId);
+  }
+  if (e.code == "KeyA" && !keys[e.code]) {
+    socket.emit("sessionBeginRotateRight", gameId);
+  }
+  keys[e.code] = true;
+};
 
-window.addEventListener("load", () => {
+const keyUp = (e) => {
+  if (e.code == "KeyW" && keys[e.code]) {
+    socket.emit("sessionStopMoveFront", gameId);
+  }
+  if (e.code == "KeyS" && keys[e.code]) {
+    socket.emit("sessionStopMoveBack", gameId);
+  }
+  if (e.code == "KeyD" && keys[e.code]) {
+    socket.emit("sessionStopRotateLeft", gameId);
+  }
+  if (e.code == "KeyA" && keys[e.code]) {
+    socket.emit("sessionStopRotateRight", gameId);
+  }
+  keys[e.code] = false;
+};
+
+window.addEventListener("load", async () => {
   console.log(`aaaaa ${name}`);
   initUser();
   console.log(`aaaaa ${name} ${gameId}`);
   initGl();
-  socketInit();
+  await socketInit();
+  window.addEventListener("keydown", keyDown, false);
+  window.addEventListener("keyup", keyUp, false);
 });
