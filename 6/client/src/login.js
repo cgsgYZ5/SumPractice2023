@@ -9,9 +9,10 @@ window.addEventListener("load", () => {
 
   const socket = io();
   async function socketInit() {
+    socket.on("connection", () => {});
     socket.on("correctLogIn", (name) => {
       Cookies.set("name", name);
-      location.assign("../userHomePage.html");
+      location.assign("../homePage/homePage.html");
     });
     socket.on("error", (err) => {
       error.innerText = err;

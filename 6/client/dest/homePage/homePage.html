@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>home</title>
+    <style>
+      .link {
+        font-size: 150%;
+      }
+      #logOutButton {
+        position: absolute;
+        background-color: #236dc1;
+        /* border: none; */
+        /* color: white; */
+        padding: 3px;
+        text-align: center;
+        /* text-decoration: none; */
+        display: inline-block;
+        font-size: 16px;
+        top: 0em;
+        right: 0em;
+      }
+      #errorForm {
+        margin: 0;
+        background: rgb(214, 20, 20);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-right: -50%;
+        transform: translate(-50%, -50%);
+        padding: 15px 20px;
+        width: 10em;
+        height: 15em;
+        overflow: auto;
+        display: none;
+        border: solid;
+      }
+      #errorForm #errorFormClose {
+        margin: 0;
+        background: rgb(156, 214, 20);
+        position: inherit;
+        left: 50%;
+        bottom: 10%;
+        display: inherit;
+        /* margin-right: -50%; */
+        padding: 5px;
+        transform: translate(-50%, 0%);
+      }
+      #errorForm #errorMessange {
+        font-weight: bold;
+        padding: 15px 20px;
+        padding-right: 0.5em;
+        color: #ffffff;
+      }
+      #onlainUsers {
+        position: absolute;
+        left: 0em;
+        top: 32px;
+      }
+      #gameButton {
+        background-color: #ed6300;
+        position: absolute;
+        text-align: center;
+        padding: 15px 20px;
+        top: 0%;
+        left: 50%;
+        transform: translate(-50%, 0%);
+      }
+      #onlainUsers #onlainUsersButton {
+        background-color: #4caf50;
+        padding: 17px;
+        text-align: center;
+        display: inline-block;
+        font-size: 10px;
+      }
+      #onlainUsers #onlainUsersText {
+        width: 10em;
+        height: 15em;
+        overflow: auto;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="selfName"></div>
+    <button id="logOutButton">logout</button>
+    <button id="gameButton">Play</button>
+    <div id="onlainUsers">
+      <button id="onlainUsersButton">Show onlain users</button>
+      <div id="onlainUsersText"></div>
+    </div>
+    <script type="module" src="homePage.js"></script>
+
+    <div id="errorForm">
+      <p id="errorMessange"></p>
+      <button id="errorFormClose">Close error</button>
+    </div>
+  </body>
+</html>

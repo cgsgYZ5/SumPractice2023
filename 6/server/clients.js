@@ -55,10 +55,10 @@ function create(...arg) {
 // };
 const activeUser = [];
 
-function funcForActiveClients(func, ...arg) {
+function funcForActiveClients(func, ...args) {
   let resMass = [];
   for (let i = 0; i < activeUser.length; i++) {
-    let res = func(activeUser[i], ...arg, i);
+    let res = func(activeUser[i], ...args, i);
 
     if (res != undefined) {
       if (res.isBreak != undefined) {
@@ -95,13 +95,20 @@ function addActiveUser(name, socket) {
     activeUserName
   );
   socket.emit("onlainUserUpdate-All", activeUserName);
-  activeUser.push({ name: name, socket: socket });
+  const user = {
+    name: name,
+    socket: socket,
+    room: undefined,
+    sessionId: undefined,
+  };
+  activeUser.push(user);
+  return user;
 }
 function delActiveUser(socket) {
   return funcForActiveClients((user, socket, i) => {
     if (user.socket == socket) {
       activeUser.splice(i, 1);
-      return { data: user.name, isBreak: true };
+      return { data: user, isBreak: true };
     }
   }, socket);
 }

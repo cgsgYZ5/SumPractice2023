@@ -1,19 +1,15 @@
 /* eslint-disable no-unused-vars */
 import { io } from "socket.io-client";
 import Cookies from "js-cookie";
+import { error, logOut } from "./tools/tools.js";
 
-const name = Cookies.get("name");
-function logOut(status) {
-  if (status) socket.disconnect();
-  Cookies.remove("name");
-  location.assign("./index.html");
-}
-
+/* socket */
 const socket = io();
 async function socketInit() {
-  socket.on("connect", () => {
+  socket.on("connection", () => {
     console.log(socket.id);
   });
+  socket.on("error", (...err) => error(...err));
   socket.on("onlainUserUpdate-All", (usersName) => {
     onlainUsers = usersName;
     onlainUsersDisplayAll();
@@ -29,22 +25,27 @@ async function socketInit() {
       onlainUsersDel(delUserName);
     }
   });
+  socket.on("addToAwaitRoom", (roomID) => {
+    room = roomID;
+    console.log(room);
+  });
+  socket.on("addGameRoom", (noofGame) => {
+    Cookies.set("gameInfo", noofGame);
+    location.assign("../game/game.html");
+  });
   socket.emit("userConnect", name);
 }
 
-if (name == undefined) {
-  logOut(false);
-} else socketInit();
-
+/* user log out */
 let logOutButton = document.getElementById("logOutButton");
 logOutButton.addEventListener("click", () => {
   logOut(true);
 });
 
-document.getElementById("selfName").innerText = name;
-
+/* other user info */
 let onlainUsers = [];
 const onlainUsersText = document.getElementById("onlainUsersText");
+const onlainUsersButton = document.getElementById("onlainUsersButton");
 function onlainUsersAdd(name) {
   const div = document.createElement("div");
 
@@ -68,8 +69,26 @@ function onlainUsersDisplayAll() {
     onlainUsersText.appendChild(div);
   });
 }
-const onlainUsersButton = document.getElementById("onlainUsersButton");
 onlainUsersButton.addEventListener("click", () => {
   const context = document.getElementById("onlainUsersText");
   context.style.display = "block";
+});
+
+/* add to await room */
+let room;
+const gameButton = document.getElementById("gameButton");
+gameButton.addEventListener("click", () => {
+  socket.emit("connectToAwaitingRoom");
+});
+
+/* user defined */
+let name;
+window.addEventListener("load", () => {
+  name = Cookies.get("name");
+  if (name == undefined) {
+    logOut(false);
+  } else {
+    socketInit();
+    document.getElementById("selfName").innerText = name;
+  }
 });

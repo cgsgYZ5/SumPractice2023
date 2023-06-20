@@ -1,5 +1,7 @@
 /* eslint-disable no-undef */
+const session = require("./session.js");
 const clients = require("./clients.js");
+const room = require("./awaitRoom.js");
 /* eslint-disable no-undef */
 const http = require("http");
 
@@ -41,10 +43,10 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("userConnect", async (name) => {
-    let user = await clients.find(name);
-    if (user != null) {
-      clients.addActiveUser(name, socket);
+  socket.on("userConnect", async (name, sessionId) => {
+    let userInBase = await clients.find(name);
+    if (userInBase != null) {
+      let activeUser = clients.addActiveUser(name, socket);
 
       clients.funcForActiveClients(
         (user, nameNewUser, socketNewUser) => {
@@ -54,18 +56,29 @@ io.on("connection", (socket) => {
         name,
         socket
       );
+      if (sessionId != undefined) {
+        session.addUser(activeUser, sessionId);
+      }
     } else {
       socket.emit("logOut");
     }
   });
   socket.on("disconnect", () => {
-    let delname = clients.delActiveUser(socket);
-    if (delname != null)
+    let delUser = clients.delActiveUser(socket);
+    if (delUser != null) {
       clients.funcForActiveClients((user, delname) => {
         user.socket.emit("onlainUserUpdate-Del", delname);
-      }, delname[0]);
+      }, delUser[0].name);
+
+      room.delFromAwait(socket, delUser[0].room);
+      if (delUser[0].sessionId != undefined)
+        session.delUser(delUser[0], delUser[0].sessionId);
+    }
   });
 
+  socket.on("connectToAwaitingRoom", () => {
+    room.addToAwait(socket);
+  });
   // socket.on("MessageToServer", (msg) => {
   //   const replyMsg = `Message from client: ${socket.id} is ${msg}`;
   //   console.log(replyMsg);
