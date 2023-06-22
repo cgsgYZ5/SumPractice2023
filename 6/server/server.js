@@ -80,28 +80,23 @@ io.on("connection", (socket) => {
     room.addToAwait(socket);
   });
 
+  socket.on("sessionShot", (sessionId) => {
+    session.addBullet(socket, sessionId);
+  });
+
   socket.on("sessionBeginMoveFront", (sessionId) => {
-    session.addAction(socket, sessionId, "moveFront", function () {
-      this.selfObj.info.pos.x += Math.cos(this.angle);
-      this.selfObj.info.pos.y += Math.cos(this.angle);
-    });
+    session.addAction(socket, sessionId, "moveFront");
   });
   socket.on("sessionBeginMoveBack", (sessionId) => {
-    session.addAction(socket, sessionId, "moveBack", function () {
-      this.selfObj.info.pos.x -= Math.cos(this.angle);
-      this.selfObj.info.pos.y -= Math.cos(this.angle);
-    });
+    session.addAction(socket, sessionId, "moveBack");
   });
   socket.on("sessionBeginRotateLeft", (sessionId) => {
-    session.addAction(socket, sessionId, "rotateLeft", function () {
-      this.selfObj.info.angle += 0.089;
-    });
+    session.addAction(socket, sessionId, "rotateLeft");
   });
   socket.on("sessionBeginRotateRight", (sessionId) => {
-    session.addAction(socket, sessionId, "rotateRight", function () {
-      this.selfObj.info.angle -= 0.089;
-    });
+    session.addAction(socket, sessionId, "rotateRight");
   });
+
   socket.on("sessionStopMoveFront", (sessionId) => {
     session.delAction(socket, sessionId, "moveFront");
   });

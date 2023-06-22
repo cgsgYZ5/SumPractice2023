@@ -2,7 +2,7 @@
 
 import { error, goHome } from "./tools/tools.js";
 
-import { initGl, createTank, drawAll } from "./game/anim.js";
+import { initGl, drawAll, createTank, createBullet } from "./game/anim.js";
 import Cookies from "js-cookie";
 import { io } from "socket.io-client";
 
@@ -17,6 +17,8 @@ async function socketInit() {
   socket.on("error", (...err) => error(...err));
   socket.on("gameConnect", (pos) => {
     console.log(socket.id);
+    createTank();
+    createBullet();
     //new createTank(pos);
   });
   socket.on("sessionUpdate", (...args) => drawAll(...args));
@@ -32,34 +34,36 @@ function initUser() {
 }
 const keys = {};
 const keyDown = (e) => {
-  if (e.code == "KeyW" && !keys[e.code]) {
+  if (e.code == "Space" && !keys[e.code]) socket.emit("sessionShot", gameId);
+
+  if (e.code == "KeyW" && !keys[e.code])
     socket.emit("sessionBeginMoveFront", gameId);
-  }
-  if (e.code == "KeyS" && !keys[e.code]) {
+
+  if (e.code == "KeyS" && !keys[e.code])
     socket.emit("sessionBeginMoveBack", gameId);
-  }
-  if (e.code == "KeyD" && !keys[e.code]) {
+
+  if (e.code == "KeyD" && !keys[e.code])
     socket.emit("sessionBeginRotateLeft", gameId);
-  }
-  if (e.code == "KeyA" && !keys[e.code]) {
+
+  if (e.code == "KeyA" && !keys[e.code])
     socket.emit("sessionBeginRotateRight", gameId);
-  }
+
   keys[e.code] = true;
 };
 
 const keyUp = (e) => {
-  if (e.code == "KeyW" && keys[e.code]) {
+  if (e.code == "KeyW" && keys[e.code])
     socket.emit("sessionStopMoveFront", gameId);
-  }
-  if (e.code == "KeyS" && keys[e.code]) {
+
+  if (e.code == "KeyS" && keys[e.code])
     socket.emit("sessionStopMoveBack", gameId);
-  }
-  if (e.code == "KeyD" && keys[e.code]) {
+
+  if (e.code == "KeyD" && keys[e.code])
     socket.emit("sessionStopRotateLeft", gameId);
-  }
-  if (e.code == "KeyA" && keys[e.code]) {
+
+  if (e.code == "KeyA" && keys[e.code])
     socket.emit("sessionStopRotateRight", gameId);
-  }
+
   keys[e.code] = false;
 };
 
