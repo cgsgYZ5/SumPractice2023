@@ -25,17 +25,26 @@ function pointLocationToLine(linePoint1, linePoint2, point3) {
   return 0;
 }
 function isPointInsideRectangle(rectangle, point) {
-  const tmp0 = pointLocationToLine(rectangle[0], rectangle[1], point),
-    tmp1 = pointLocationToLine(rectangle[1], rectangle[2], point),
-    tmp2 = pointLocationToLine(rectangle[2], rectangle[3], point),
-    tmp3 = pointLocationToLine(rectangle[3], rectangle[0], point);
-  if (tmp0 >= 0 && tmp1 >= 0 && tmp2 >= 0 && tmp3 >= 0) return true;
-  return false;
+  let tmp;
+  for (let i = 0; i < rectangle.length; i++) {
+    if (i != rectangle.length - 1)
+      tmp = pointLocationToLine(rectangle[i], rectangle[i + 1], point);
+    else tmp = pointLocationToLine(rectangle[i], rectangle[0], point);
+
+    if (tmp < 0) return false;
+  }
+  return true;
+  // const tmp0 = pointLocationToLine(rectangle[0], rectangle[1], point),
+  //   tmp1 = pointLocationToLine(rectangle[1], rectangle[2], point),
+  //   tmp2 = pointLocationToLine(rectangle[2], rectangle[3], point),
+  //   tmp3 = pointLocationToLine(rectangle[3], rectangle[0], point);
+  // if (tmp0 >= 0 && tmp1 >= 0 && tmp2 >= 0 && tmp3 >= 0) return true;
+  // return false;
 }
 function isRectangleIntersect(rectangle1, rectangle2) {
-  for (let i = 0; i < 4; i++)
+  for (let i = 0; i < rectangle1.length; i++)
     if (isPointInsideRectangle(rectangle1, rectangle2[i])) return true;
-  for (let i = 0; i < 4; i++)
+  for (let i = 0; i < rectangle2.length; i++)
     if (isPointInsideRectangle(rectangle2, rectangle1[i])) return true;
   return false;
 }
@@ -49,7 +58,7 @@ function massToVec2(mass) {
   return Obj;
 }
 
-function massFromSelfObj(centerCoords, selfObj) {
+function massFromSelfObj(centerCoords, drawInfo) {
   const massCoords = [
     { x: 1, y: 1 },
     { x: 1, y: -1 },
@@ -57,42 +66,51 @@ function massFromSelfObj(centerCoords, selfObj) {
     { x: -1, y: 1 },
   ];
   let mass = [];
-        
-  for (let i =0 ; i < 4; i++)
-  {
+
+  // in_pos.x * scale.x * cos(angle) + in_pos.y * scale.y * sin(angle);
+  // in_pos.y * scale.y * cos(angle) - in_pos.x * scale.x * sin(angle);
+  for (let i = 0; i < 4; i++) {
     mass.push({
       x:
-        massCoords[i].x * selfObj.info.scale.x * cos(selfObj.info.angle) +
-        massCoords[i].y * selfObj.info.scale.y * sin(selfObj.info.angle),
-      y:in_pos.y * scale.y * cos(angle) - in_pos.x * scale.x * sin(angle) + pos.y);
+        centerCoords.x +
+        massCoords[i].x * drawInfo.scale.x * Math.cos(drawInfo.angle) +
+        massCoords[i].y * drawInfo.scale.y * Math.sin(drawInfo.angle),
+      y:
+        centerCoords.y +
+        massCoords[i].y * drawInfo.scale.y * Math.cos(drawInfo.angle) -
+        massCoords[i].x * drawInfo.scale.x * Math.sin(drawInfo.angle),
     });
   }
-  return [
+  const aba = [
     centerCoords.x +
-      (selfObj.info.scale.x * Math.cos(selfObj.info.angle) +
-        selfObj.info.scale.y * Math.sin(selfObj.info.angle)),
+      drawInfo.scale.x * Math.cos(drawInfo.angle) +
+      drawInfo.scale.y * Math.sin(drawInfo.angle),
     centerCoords.y +
-      (selfObj.info.scale.x * Math.sin(selfObj.info.angle) +
-        selfObj.info.scale.y * Math.cos(selfObj.info.angle)),
+      drawInfo.scale.y * Math.cos(drawInfo.angle) -
+      drawInfo.scale.x * Math.sin(drawInfo.angle),
+
     centerCoords.x +
-      (selfObj.info.scale.x * Math.cos(selfObj.info.angle) +
-        selfObj.info.scale.y * Math.sin(selfObj.info.angle)),
+      drawInfo.scale.x * Math.cos(drawInfo.angle) -
+      drawInfo.scale.y * Math.sin(drawInfo.angle),
     centerCoords.y -
-      (selfObj.info.scale.x * Math.sin(selfObj.info.angle) +
-        selfObj.info.scale.y * Math.cos(selfObj.info.angle)),
+      drawInfo.scale.y * Math.cos(drawInfo.angle) -
+      drawInfo.scale.x * Math.sin(drawInfo.angle),
+
     centerCoords.x -
-      (selfObj.info.scale.x * Math.cos(selfObj.info.angle) +
-        selfObj.info.scale.y * Math.sin(selfObj.info.angle)),
+      drawInfo.scale.x * Math.cos(drawInfo.angle) -
+      drawInfo.scale.y * Math.sin(drawInfo.angle),
     centerCoords.y -
-      (selfObj.info.scale.x * Math.sin(selfObj.info.angle) +
-        selfObj.info.scale.y * Math.cos(selfObj.info.angle)),
+      drawInfo.scale.y * Math.cos(drawInfo.angle) +
+      drawInfo.scale.x * Math.sin(drawInfo.angle),
+
     centerCoords.x -
-      (selfObj.info.scale.x * Math.cos(selfObj.info.angle) +
-        selfObj.info.scale.y * Math.sin(selfObj.info.angle)),
+      drawInfo.scale.x * Math.cos(drawInfo.angle) +
+      drawInfo.scale.y * Math.sin(drawInfo.angle),
     centerCoords.y +
-      (selfObj.info.scale.x * Math.sin(selfObj.info.angle) +
-        selfObj.info.scale.y * Math.cos(selfObj.info.angle)),
+      drawInfo.scale.y * Math.cos(drawInfo.angle) +
+      drawInfo.scale.x * Math.sin(drawInfo.angle),
   ];
+  return aba;
 }
 
 module.exports = {

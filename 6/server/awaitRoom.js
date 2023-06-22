@@ -22,7 +22,7 @@ function addToAwait(socket) {
     }
   if (user[0].room == undefined) {
     user[0].room = awaitQueue.length;
-    awaitQueue.push({ name: "", type: 2, users: [socket] });
+    awaitQueue.push({ name: "", type: 1, users: [socket] });
   }
 
   socket.emit("addToAwaitRoom", user[0].room);

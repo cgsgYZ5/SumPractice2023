@@ -15,7 +15,7 @@ async function socketInit() {
     console.log(socket.id);
   });
   socket.on("error", (...err) => error(...err));
-  socket.on("gameConnect", (pos) => {
+  socket.on("gameConnect", () => {
     console.log(socket.id);
     createTank();
     createBullet();

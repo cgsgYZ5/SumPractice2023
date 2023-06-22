@@ -81,7 +81,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("sessionShot", (sessionId) => {
-    session.addBullet(socket, sessionId);
+    session.addBullet(socket, sessionId, "def");
   });
 
   socket.on("sessionBeginMoveFront", (sessionId) => {

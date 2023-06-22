@@ -1,9 +1,35 @@
 const tools = require("./tools.js");
 
-const viewCoeff = 30000;
+const viewCoeffPlayer = 30000;
+const viewCoeffBullet = 10000;
 
 const sessions = [];
 
+const typeInfo = {
+  tank: {
+    def: {
+      generalInfo: {
+        subtupe: "def",
+        pos: null,
+        angle: 0,
+        scale: { x: 20, y: 20 },
+      },
+      gameInfo: { speed: 2.5 },
+    },
+  },
+  bullet: {
+    def: {
+      generalInfo: {
+        subtupe: "def",
+        createdName: null,
+        pos: null,
+        angle: 0,
+        scale: { x: 2, y: 6 },
+      },
+      gameInfo: { speed: 1 },
+    },
+  },
+};
 const posInMap = {
   1: [{ x: 10, y: 10 }],
   2: [
@@ -24,40 +50,35 @@ function len2(pos1, pos2) {
   );
 }
 
-// function objAdd(sessionId, type, info, pos) {
-//   const view = [];
-
-//   sessionObj.forEach((obj) => {
-//     if (len(obj.pos, pos) < viewCoeff) view.push(obj);
-//   });
-//   sessionObj.push({ type: type, info: info, pos: pos, view: view });
-// }
-const addPlayer = function (pos, userName) {
+const addPlayer = function (type, pos, userName) {
   let thisObg = {
-    selfObj: {
-      name: "tank",
-      info: {
-        type: "vfvf" /*"tank"*/,
-        pos: pos,
-        angle: 0,
-        userName: userName,
-        scale: { x: 20, y: 20 },
-      },
+    generalInfo: { type: "tank", userName: userName },
+    gameInfo: {},
+    info: {},
+
+    view: {
+      absolute: [],
+      relative: [],
     },
-    view: [],
-    isNeedToReaction: false,
-    isNeedToDraw: true,
 
     moveFront: null,
     moveBack: null,
     rotateLeft: null,
     rotateRight: null,
+
+    isNeedToReaction: true,
+    isNeedToDraw: true,
   };
 
-  thisObg.view.push(thisObg.selfObj);
+  Object.assign(thisObg.generalInfo, typeInfo.tank[type].generalInfo);
+  thisObg.generalInfo.pos = pos;
+  Object.assign(thisObg.gameInfo, typeInfo.tank[type].gameInfo);
+  // Object.assign(thisObg.gameInfo, thisObg.drawInfo);
+  thisObg.view.absolute.push(thisObg.generalInfo);
+  thisObg.view.relative.push(null);
   // for (let i = 0; i < this.allUsersName.length; i++) {
   //   const otherPlayer = this.playerObj[this.allUsersName[i]];
-  //   if (len2(otherPlayer.selfObj.info.pos, pos) < viewCoeff) {
+  //   if (len2(otherPlayer.generalInfo.pos, pos) < viewCoeffPlayer) {
   //     otherPlayer.view.push(thisObg.selfObj);
   //     otherPlayer.isNeedToDraw = true;
 
@@ -67,15 +88,15 @@ const addPlayer = function (pos, userName) {
   //     //this.playerObj[i];
   //   }
   // }
-  this.playerObj[userName] = thisObg;
-  return pos;
+  this.playerObj.push(thisObg);
 };
 const update = function () {
   /* user update */
   for (let i = 0; i < this.activeUser.length; i++) {
-    const player = this.playerObj[this.activeUser[i].name];
+    const player = this.playerObj[i];
 
     if (player.isNeedToReaction) {
+      player.isNeedToReaction = false;
       if (player["moveFront"])
         player["moveFront"](), (player.isNeedToDraw = true);
       if (player["moveBack"])
@@ -84,8 +105,6 @@ const update = function () {
         player["rotateLeft"](), (player.isNeedToDraw = true);
       if (player["rotateRight"])
         player["rotateRight"](), (player.isNeedToDraw = true);
-      // player.isNeedToDraw = true;
-      //if (player.actions[j]) player.actions[j]();
     }
   }
   /* move object update */
@@ -95,30 +114,36 @@ const update = function () {
   }
 
   /* player to player view place update */
-  for (let i = 0; i < this.allUsersName.length; i++) {
-    const player = this.playerObj[this.allUsersName[i]];
+  for (let i = 0; i < this.playerObj.length; i++) {
+    const player = this.playerObj[i];
     if (player.isNeedToReaction)
-      for (let j = 0; j < this.allUsersName.length; j++) {
+      for (let j = 0; j < this.playerObj.length; j++) {
         if (i == j) continue;
-        const otherPlayer = this.playerObj[this.allUsersName[j]];
-        const ind = player.view.indexOf(otherPlayer.selfObj);
+        const otherPlayer = this.playerObj[j];
+        const ind = player.view.absolute.indexOf(otherPlayer.generalInfo);
         if (
-          len2(otherPlayer.selfObj.info.pos, player.selfObj.info.pos) <
-          viewCoeff
+          len2(otherPlayer.generalInfo.pos, player.generalInfo.pos) <
+          viewCoeffPlayer
         ) {
           player.isNeedToDraw = true;
           otherPlayer.isNeedToDraw = true;
 
           if (ind >= 0) continue;
 
-          player.view.push(otherPlayer.selfObj);
-          otherPlayer.view.push(player.selfObj);
+          player.view.absolute.push(otherPlayer.generalInfo);
+          player.view.relative.push(null);
+          otherPlayer.view.absolute.push(otherPlayer.generalInfo);
+          otherPlayer.view.relative.push(null);
         } else if (ind >= 0) {
           player.isNeedToDraw = true;
           otherPlayer.isNeedToDraw = true;
 
-          player.view.splice(ind, 1);
-          otherPlayer.view.splice(ind, 1);
+          player.view.absolute.splice(ind, 1);
+          player.view.relative.splice(ind, 1);
+
+          const ind2 = otherPlayer.view.absolute.indexOf(player.generalInfo);
+          otherPlayer.view.absolute.splice(ind2, 1);
+          otherPlayer.view.relative.splice(ind2, 1);
         }
       }
   }
@@ -127,32 +152,50 @@ const update = function () {
   for (let i = 0; i < this.moveObj.length; i++) {
     const moveObj = this.moveObj[i];
 
-    for (let j = 0; j < this.allUsersName.length; j++) {
-      const player = this.playerObj[this.allUsersName[j]];
-      const ind = player.view.indexOf(moveObj.selfObj);
-      if (len2(player.selfObj.info.pos, moveObj.selfObj.info.pos) < viewCoeff) {
+    for (let j = 0; j < this.playerObj.length; j++) {
+      const player = this.playerObj[j];
+      const ind1 = player.view.absolute.indexOf(moveObj.generalInfo);
+      if (
+        len2(player.generalInfo.pos, moveObj.generalInfo.pos) < viewCoeffPlayer
+      ) {
         player.isNeedToDraw = true;
 
-        if (ind >= 0) continue;
+        if (ind1 >= 0) continue;
 
-        player.view.push(moveObj.selfObj);
-        moveObj.view.push(player.selfObj);
-      } else if (ind >= 0) {
+        player.view.absolute.push(moveObj.generalInfo);
+        player.view.relative.push(moveObj.generalInfo);
+      } else if (ind1 >= 0) {
         player.isNeedToDraw = true;
-        player.view.splice(ind, 1);
-        moveObj.view.splice(ind, 1);
+        player.view.absolute.splice(ind1, 1);
+        player.view.relative.splice(ind1, 1);
+      }
+      const ind2 = player.view.absolute.indexOf(moveObj.generalInfo);
+      if (
+        len2(moveObj.generalInfo.pos, player.generalInfo.pos) < viewCoeffBullet
+      ) {
+        if (ind2 >= 0) continue;
+
+        moveObj.view.absolute.push(player.generalInfo);
+        moveObj.view.relative.push(player.generalInfo);
+      } else if (ind2 >= 0) {
+        moveObj.view.absolute.splice(ind2, 1);
+        moveObj.view.relative.splice(ind2, 1);
       }
     }
   }
   /* send draw data to player */
-  for (let i = 0; i < this.activeUser.length; i++) {
-    const player = this.playerObj[this.activeUser[i].name];
+  for (let i = 0; i < this.playerObj.length; i++) {
+    const player = this.playerObj[i];
     if (player.isNeedToDraw) {
-      console.log(this.playerObj[this.activeUser[i].name].view);
-      this.activeUser[i].socket.emit(
-        "sessionUpdate",
-        this.playerObj[this.activeUser[i].name].view
-      );
+      console.log(this.playerObj[i].view.absolute);
+      for (let j = 0; j < this.activeUser.length; j++)
+        if (this.activeUser[j].name == player.generalInfo.userName) {
+          this.activeUser[j].socket.emit(
+            "sessionUpdate",
+            this.playerObj[i].view
+          );
+          break;
+        }
       player.isNeedToDraw = false;
     }
   }
@@ -163,15 +206,21 @@ const start = function () {
 };
 function create(sessionId, type) {
   sessions[sessionId] = {
+    type: type,
+
     allUsersName: [],
     activeUser: [],
-    type: type,
-    staticObj: [], ///
-    playerObj: {},
+
+    playerObj: [],
     moveObj: [], ///
+    staticObj: [], ///
+
+    delUserPlayerObj: [],
+
     update: update,
     addPlayer: addPlayer,
     start: start,
+
     stopId: null,
     isStarted: false,
   };
@@ -185,29 +234,39 @@ function addUser(user, sessionId) {
   }
   if (!activeSession.isStarted) {
     user.sessionId = sessionId;
-    user.socket.emit(
-      "gameConnect",
-      activeSession.addPlayer(
-        posInMap[activeSession.type][activeSession.activeUser.length],
-        user.name
-      )
+    activeSession.addPlayer(
+      "def",
+      posInMap[activeSession.type][activeSession.activeUser.length],
+      user.name
     );
+    user.socket.emit("gameConnect");
     activeSession.allUsersName.push(user.name);
     activeSession.activeUser.push(user);
     if (activeSession.type == activeSession.activeUser.length)
       activeSession.start();
-  } else if (activeSession.playerObj[user.name] != undefined) {
-    user.sessionId = sessionId;
-    activeSession.activeUser.push(user);
-    activeSession.playerObj[user.name].isNeedToDraw = true;
-    user.socket.emit(
-      "gameConnect",
-      activeSession.playerObj[user.name].selfObj.info.pos
-    ); /*
-    else {
-      user.socket.emit("error", `No have player with ${user.name} name`);
-      return;
-    }*/
+  } else {
+    for (let j = 0; j < activeSession.delUserPlayerObj.length; j++) {
+      if (activeSession.delUserPlayerObj[j].generalInfo.userName == user.name) {
+        user.sessionId = sessionId;
+        const userObj = activeSession.delUserPlayerObj[j];
+
+        activeSession.delUserPlayerObj.splice(j, 1);
+        activeSession.playerObj.splice(
+          activeSession.playerObj.length + j - 1,
+          1
+        );
+
+        activeSession.playerObj.splice(
+          activeSession.activeUser.length,
+          0,
+          userObj
+        );
+
+        activeSession.activeUser.push(user);
+        userObj.isNeedToDraw = true;
+        user.socket.emit("gameConnect", userObj.generalInfo.pos);
+      }
+    }
   }
 }
 function delUser(user, sessionId) {
@@ -216,16 +275,21 @@ function delUser(user, sessionId) {
 
   const ind = activeSession.activeUser.indexOf(user);
   if (ind >= 0) {
-    activeSession.playerObj[user.name]["moveFront"] = null;
-    activeSession.playerObj[user.name]["moveBack"] = null;
-    activeSession.playerObj[user.name]["rotateLeft"] = null;
-    activeSession.playerObj[user.name]["rotateRight"] = null;
-    activeSession.playerObj[user.name].isNeedToReaction = false;
+    activeSession.playerObj[ind]["moveFront"] = null;
+    activeSession.playerObj[ind]["moveBack"] = null;
+    activeSession.playerObj[ind]["rotateLeft"] = null;
+    activeSession.playerObj[ind]["rotateRight"] = null;
+    activeSession.playerObj[ind].isNeedToReaction = false;
+
+    activeSession.delUserPlayerObj.push(activeSession.playerObj[ind]);
+    activeSession.playerObj.push(activeSession.playerObj[ind]);
+    activeSession.playerObj.splice(ind, 1);
+
     activeSession.activeUser.splice(ind, 1);
   }
 }
-// this.selfObj.info.scale.x * Math.sin(this.selfObj.info.angle) +
-//   this.selfObj.info.scale.y * Math.cos(this.selfObj.info.angle),
+// this.drawInfo.scale.x * Math.sin(this.generalInfo.angle) +
+//   this.drawInfo.scale.y * Math.cos(this.generalInfo.angle),
 function collisionCalculation(mass, otherObj) {
   const massOtherPoints = [
     {
@@ -287,63 +351,97 @@ function addAction(socket, sessionId, noofAction) {
   }
   for (let i = 0; i < activeSession.activeUser.length; i++)
     if (activeSession.activeUser[i].socket == socket) {
-      const name = activeSession.activeUser[i].name;
-      let action;
-
       if (noofAction == "moveFront")
         action = function () {
           let flag = true;
           const newX =
-              this.selfObj.info.pos.x + Math.sin(this.selfObj.info.angle),
-            newY = this.selfObj.info.pos.y + Math.cos(this.selfObj.info.angle);
+              this.generalInfo.pos.x +
+              Math.sin(this.generalInfo.angle) * this.gameInfo.speed,
+            newY =
+              this.generalInfo.pos.y +
+              Math.cos(this.generalInfo.angle) * this.gameInfo.speed;
 
-          for (let i = 1; i < this.view.length; i++) {
-            if (this.view[i].name == "tank") {
-              const maxScaleSelf =
-                this.selfObj.info.scale.x * this.selfObj.info.scale.x +
-                this.selfObj.info.scale.y * this.selfObj.info.scale.y;
-              maxScaleOther =
-                this.view[i].info.scale.x * this.view[i].info.scale.x +
-                this.view[i].info.scale.y * this.view[i].info.scale.y;
-              const a = Math.sqrt(
-                  len2({ x: newX, y: newY }, this.view[i].info.pos)
-                ),
-                b = Math.sqrt(maxScaleOther) + Math.sqrt(maxScaleSelf);
-              if (a < b) {
-                let mass1 = tools.massToVec2(
-                  tools.massFromSelfObj({ x: newX, y: newY }, this.selfObj)
-                );
-                let mass2 = tools.massToVec2(
-                  tools.massFromSelfObj(this.view[i].info.pos, this.view[i])
-                );
-                if (tools.isRectangleIntersect(mass1, mass2)) {
-                  flag = false;
-                  break;
-                }
+          for (let i = 1; i < this.view.absolute.length; i++) {
+            const otherDrawInfo = this.view.absolute[i];
+            const maxScaleSelf =
+              this.generalInfo.scale.x * this.generalInfo.scale.x +
+              this.generalInfo.scale.y * this.generalInfo.scale.y;
+            maxScaleOther =
+              otherDrawInfo.scale.x * otherDrawInfo.scale.x +
+              otherDrawInfo.scale.y * otherDrawInfo.scale.y;
+            const a = Math.sqrt(len2({ x: newX, y: newY }, otherDrawInfo.pos)),
+              b = Math.sqrt(maxScaleOther) + Math.sqrt(maxScaleSelf);
+            if (a < b) {
+              let mass1 = tools.massToVec2(
+                tools.massFromSelfObj({ x: newX, y: newY }, this.generalInfo)
+              );
+              let mass2 = tools.massToVec2(
+                tools.massFromSelfObj(otherDrawInfo.pos, otherDrawInfo)
+              );
+              if (tools.isRectangleIntersect(mass1, mass2)) {
+                flag = false;
+                break;
               }
             }
           }
           if (flag) {
-            this.selfObj.info.pos.x = newX;
-            this.selfObj.info.pos.y = newY;
+            this.generalInfo.pos.x = newX;
+            this.generalInfo.pos.y = newY;
+            this.isNeedToReaction = true;
           }
         };
       else if (noofAction == "moveBack")
         action = function () {
-          this.selfObj.info.pos.x -= Math.sin(this.selfObj.info.angle);
-          this.selfObj.info.pos.y -= Math.cos(this.selfObj.info.angle);
+          let flag = true;
+          const newX =
+              this.generalInfo.pos.x -
+              Math.sin(this.generalInfo.angle) * this.gameInfo.speed,
+            newY =
+              this.generalInfo.pos.y -
+              Math.cos(this.generalInfo.angle) * this.gameInfo.speed;
+
+          for (let i = 1; i < this.view.absolute.length; i++) {
+            const otherDrawInfo = this.view.absolute[i];
+            const maxScaleSelf =
+              this.generalInfo.scale.x * this.generalInfo.scale.x +
+              this.generalInfo.scale.y * this.generalInfo.scale.y;
+            maxScaleOther =
+              otherDrawInfo.scale.x * otherDrawInfo.scale.x +
+              otherDrawInfo.scale.y * otherDrawInfo.scale.y;
+            const a = Math.sqrt(len2({ x: newX, y: newY }, otherDrawInfo.pos)),
+              b = Math.sqrt(maxScaleOther) + Math.sqrt(maxScaleSelf);
+            if (a < b) {
+              let mass1 = tools.massToVec2(
+                tools.massFromSelfObj({ x: newX, y: newY }, this.selfObj)
+              );
+              let mass2 = tools.massToVec2(
+                tools.massFromSelfObj(otherDrawInfo.pos, otherDrawInfo)
+              );
+              if (tools.isRectangleIntersect(mass1, mass2)) {
+                flag = false;
+                break;
+              }
+            }
+          }
+          if (flag) {
+            this.generalInfo.pos.x = newX;
+            this.generalInfo.pos.y = newY;
+            this.isNeedToReaction = true;
+          }
         };
       else if (noofAction == "rotateRight")
         action = function () {
-          this.selfObj.info.angle -= 0.089;
+          this.isNeedToReaction = true;
+          this.generalInfo.angle -= 0.089;
         };
       else if (noofAction == "rotateLeft")
         action = function () {
-          this.selfObj.info.angle += 0.089;
+          this.isNeedToReaction = true;
+          this.generalInfo.angle += 0.089;
         };
 
-      activeSession.playerObj[name][noofAction] = action;
-      activeSession.playerObj[name].isNeedToReaction = true;
+      activeSession.playerObj[i][noofAction] = action;
+      activeSession.playerObj[i].isNeedToReaction = true;
       return;
     }
 }
@@ -355,63 +453,93 @@ function delAction(socket, sessionId, noofAction) {
   }
   for (let i = 0; i < activeSession.activeUser.length; i++)
     if (activeSession.activeUser[i].socket == socket) {
-      const name = activeSession.activeUser[i].name;
-      activeSession.playerObj[name][noofAction] = null;
+      activeSession.playerObj[i][noofAction] = null;
       if (
-        !activeSession.playerObj[name]["moveFront"] &&
-        !activeSession.playerObj[name]["moveBack"] &&
-        !activeSession.playerObj[name]["rotateLeft"] &&
-        !activeSession.playerObj[name]["rotateRight"]
+        !activeSession.playerObj[i]["moveFront"] &&
+        !activeSession.playerObj[i]["moveBack"] &&
+        !activeSession.playerObj[i]["rotateLeft"] &&
+        !activeSession.playerObj[i]["rotateRight"]
       )
-        activeSession.playerObj[name].isNeedToReaction = false;
+        activeSession.playerObj[i].isNeedToReaction = false;
       return;
     }
 }
 
-function addBullet(socket, sessionId) {
+function addBullet(socket, sessionId, type) {
   const activeSession = sessions[sessionId];
   if (activeSession == undefined) {
     socket.emit("error", "Session id not valid", null, "home");
     return;
   }
-  let thisObg = {
-    selfObj: {
-      name: "bullet",
-      info: {
-        type: "vfvf" /*"tank"*/,
-        pos: null,
-        angle: null,
-        createdName: null,
-        scale: { x: 2, y: 6 },
-      },
-    },
-    view: [],
-
-    update: function () {
-      this.selfObj.info.pos.x += Math.sin(this.selfObj.info.angle);
-      this.selfObj.info.pos.y += Math.cos(this.selfObj.info.angle);
-    },
-  };
-
   for (let i = 0; i < activeSession.activeUser.length; i++)
     if (activeSession.activeUser[i].socket == socket) {
-      const createdTankInfo =
-        activeSession.playerObj[activeSession.activeUser[i].name].selfObj.info;
-      thisObg.selfObj.info.pos = Object.assign({}, createdTankInfo.pos);
-      thisObg.selfObj.info.angle =
-        activeSession.playerObj[
-          activeSession.activeUser[i].name
-        ].selfObj.info.angle;
-      thisObg.selfObj.info.createdName = activeSession.activeUser[i].name;
+      let thisObg = {
+        generalInfo: { type: "bullet" },
+        gameInfo: {},
+        view: {
+          absolute: [],
+          relative: [],
+        },
 
-      thisObg.selfObj.info.pos.x +=
-        Math.sin(thisObg.selfObj.info.angle) * createdTankInfo.scale.x;
-      thisObg.selfObj.info.pos.y +=
-        Math.cos(thisObg.selfObj.info.angle) * createdTankInfo.scale.y;
+        update: function () {
+          this.generalInfo.pos.x += Math.sin(this.generalInfo.angle);
+          this.generalInfo.pos.y += Math.cos(this.generalInfo.angle);
+
+          let flag = true;
+          const newX =
+              this.generalInfo.pos.x +
+              Math.sin(this.generalInfo.angle) * this.gameInfo.speed,
+            newY =
+              this.generalInfo.pos.y +
+              Math.cos(this.generalInfo.angle) * this.gameInfo.speed;
+
+          for (let i = 1; i < this.view.absolute.length; i++) {
+            const otherDrawInfo = this.view.absolute[i];
+            const maxScaleSelf =
+              this.generalInfo.scale.x * this.generalInfo.scale.x +
+              this.generalInfo.scale.y * this.generalInfo.scale.y;
+            maxScaleOther =
+              otherDrawInfo.scale.x * otherDrawInfo.scale.x +
+              otherDrawInfo.scale.y * otherDrawInfo.scale.y;
+            const a = Math.sqrt(len2({ x: newX, y: newY }, otherDrawInfo.pos)),
+              b = Math.sqrt(maxScaleOther) + Math.sqrt(maxScaleSelf);
+            if (a < b) {
+              let mass1 = tools.massToVec2(
+                tools.massFromSelfObj({ x: newX, y: newY }, this.selfObj)
+              );
+              let mass2 = tools.massToVec2(
+                tools.massFromSelfObj(otherDrawInfo.pos, otherDrawInfo)
+              );
+              if (tools.isRectangleIntersect(mass1, mass2)) {
+                flag = false;
+                break;
+              }
+            }
+          }
+          if (flag) {
+            this.generalInfo.pos.x = newX;
+            this.generalInfo.pos.y = newY;
+          }
+        },
+      };
+
+      Object.assign(thisObg.generalInfo, typeInfo.bullet[type].generalInfo);
+      Object.assign(thisObg.gameInfo, typeInfo.bullet[type].gameInfo);
+
+      const createdTankInfo = activeSession.playerObj[i].generalInfo;
+
+      thisObg.generalInfo.pos = Object.assign({}, createdTankInfo.pos);
+      thisObg.generalInfo.angle = createdTankInfo.angle;
+      thisObg.generalInfo.createdName = activeSession.activeUser[i].name;
+
+      thisObg.generalInfo.pos.x +=
+        Math.sin(thisObg.generalInfo.angle) * createdTankInfo.scale.x;
+      thisObg.generalInfo.pos.y +=
+        Math.cos(thisObg.generalInfo.angle) * createdTankInfo.scale.y;
+
+      activeSession.moveObj.push(thisObg);
       break;
     }
-
-  activeSession.moveObj.push(thisObg);
 }
 
 module.exports = {
