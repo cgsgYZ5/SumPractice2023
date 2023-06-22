@@ -312,16 +312,16 @@ function _createBullet() {
 export function createBullet() {
   return new _createBullet();
 }
-export function drawAll(allElementsToDraw) {
-  let userPos = allElementsToDraw.absolute[0].pos;
+export function drawAll(allElementsToDraw, user) {
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   gl.clearColor(1, 1, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT);
 
+  createdElements[user.type].draw(user, user.pos);
   for (let i = 0; i < allElementsToDraw.absolute.length; i++) {
     createdElements[allElementsToDraw.absolute[i].type].draw(
       allElementsToDraw.absolute[i],
-      userPos
+      user.pos
     );
   }
   // allElementsToDraw.forEach((element) => {

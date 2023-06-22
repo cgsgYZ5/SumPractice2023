@@ -1,7 +1,7 @@
 const tools = require("./tools.js");
 
 const viewCoeffPlayer = 30000;
-const viewCoeffBullet = 10000;
+const viewCoeffBullet = 30000;
 
 const sessions = [];
 
@@ -74,7 +74,7 @@ const addPlayer = function (type, pos, userName) {
   thisObg.generalInfo.pos = pos;
   Object.assign(thisObg.gameInfo, typeInfo.tank[type].gameInfo);
   // Object.assign(thisObg.gameInfo, thisObg.drawInfo);
-  thisObg.view.absolute.push(thisObg.generalInfo);
+  // thisObg.view.absolute.push(thisObg.generalInfo);
   thisObg.view.relative.push(null);
   // for (let i = 0; i < this.allUsersName.length; i++) {
   //   const otherPlayer = this.playerObj[this.allUsersName[i]];
@@ -169,7 +169,7 @@ const update = function () {
         player.view.absolute.splice(ind1, 1);
         player.view.relative.splice(ind1, 1);
       }
-      const ind2 = player.view.absolute.indexOf(moveObj.generalInfo);
+      const ind2 = moveObj.view.absolute.indexOf(moveObj.generalInfo);
       if (
         len2(moveObj.generalInfo.pos, player.generalInfo.pos) < viewCoeffBullet
       ) {
@@ -192,7 +192,8 @@ const update = function () {
         if (this.activeUser[j].name == player.generalInfo.userName) {
           this.activeUser[j].socket.emit(
             "sessionUpdate",
-            this.playerObj[i].view
+            this.playerObj[i].view,
+            this.playerObj[i].generalInfo
           );
           break;
         }
@@ -351,6 +352,7 @@ function addAction(socket, sessionId, noofAction) {
   }
   for (let i = 0; i < activeSession.activeUser.length; i++)
     if (activeSession.activeUser[i].socket == socket) {
+      let action;
       if (noofAction == "moveFront")
         action = function () {
           let flag = true;
@@ -361,14 +363,14 @@ function addAction(socket, sessionId, noofAction) {
               this.generalInfo.pos.y +
               Math.cos(this.generalInfo.angle) * this.gameInfo.speed;
 
-          for (let i = 1; i < this.view.absolute.length; i++) {
+          for (let i = 0; i < this.view.absolute.length; i++) {
             const otherDrawInfo = this.view.absolute[i];
             const maxScaleSelf =
-              this.generalInfo.scale.x * this.generalInfo.scale.x +
-              this.generalInfo.scale.y * this.generalInfo.scale.y;
-            maxScaleOther =
-              otherDrawInfo.scale.x * otherDrawInfo.scale.x +
-              otherDrawInfo.scale.y * otherDrawInfo.scale.y;
+                this.generalInfo.scale.x * this.generalInfo.scale.x +
+                this.generalInfo.scale.y * this.generalInfo.scale.y,
+              maxScaleOther =
+                otherDrawInfo.scale.x * otherDrawInfo.scale.x +
+                otherDrawInfo.scale.y * otherDrawInfo.scale.y;
             const a = Math.sqrt(len2({ x: newX, y: newY }, otherDrawInfo.pos)),
               b = Math.sqrt(maxScaleOther) + Math.sqrt(maxScaleSelf);
             if (a < b) {
@@ -403,16 +405,16 @@ function addAction(socket, sessionId, noofAction) {
           for (let i = 1; i < this.view.absolute.length; i++) {
             const otherDrawInfo = this.view.absolute[i];
             const maxScaleSelf =
-              this.generalInfo.scale.x * this.generalInfo.scale.x +
-              this.generalInfo.scale.y * this.generalInfo.scale.y;
-            maxScaleOther =
-              otherDrawInfo.scale.x * otherDrawInfo.scale.x +
-              otherDrawInfo.scale.y * otherDrawInfo.scale.y;
+                this.generalInfo.scale.x * this.generalInfo.scale.x +
+                this.generalInfo.scale.y * this.generalInfo.scale.y,
+              maxScaleOther =
+                otherDrawInfo.scale.x * otherDrawInfo.scale.x +
+                otherDrawInfo.scale.y * otherDrawInfo.scale.y;
             const a = Math.sqrt(len2({ x: newX, y: newY }, otherDrawInfo.pos)),
               b = Math.sqrt(maxScaleOther) + Math.sqrt(maxScaleSelf);
             if (a < b) {
               let mass1 = tools.massToVec2(
-                tools.massFromSelfObj({ x: newX, y: newY }, this.selfObj)
+                tools.massFromSelfObj({ x: newX, y: newY }, this.generalInfo)
               );
               let mass2 = tools.massToVec2(
                 tools.massFromSelfObj(otherDrawInfo.pos, otherDrawInfo)
@@ -482,8 +484,8 @@ function addBullet(socket, sessionId, type) {
         },
 
         update: function () {
-          this.generalInfo.pos.x += Math.sin(this.generalInfo.angle);
-          this.generalInfo.pos.y += Math.cos(this.generalInfo.angle);
+          // this.generalInfo.pos.x += Math.sin(this.generalInfo.angle);
+          // this.generalInfo.pos.y += Math.cos(this.generalInfo.angle);
 
           let flag = true;
           const newX =
@@ -493,19 +495,19 @@ function addBullet(socket, sessionId, type) {
               this.generalInfo.pos.y +
               Math.cos(this.generalInfo.angle) * this.gameInfo.speed;
 
-          for (let i = 1; i < this.view.absolute.length; i++) {
+          for (let i = 0; i < this.view.absolute.length; i++) {
             const otherDrawInfo = this.view.absolute[i];
             const maxScaleSelf =
-              this.generalInfo.scale.x * this.generalInfo.scale.x +
-              this.generalInfo.scale.y * this.generalInfo.scale.y;
-            maxScaleOther =
-              otherDrawInfo.scale.x * otherDrawInfo.scale.x +
-              otherDrawInfo.scale.y * otherDrawInfo.scale.y;
+                this.generalInfo.scale.x * this.generalInfo.scale.x +
+                this.generalInfo.scale.y * this.generalInfo.scale.y,
+              maxScaleOther =
+                otherDrawInfo.scale.x * otherDrawInfo.scale.x +
+                otherDrawInfo.scale.y * otherDrawInfo.scale.y;
             const a = Math.sqrt(len2({ x: newX, y: newY }, otherDrawInfo.pos)),
               b = Math.sqrt(maxScaleOther) + Math.sqrt(maxScaleSelf);
             if (a < b) {
               let mass1 = tools.massToVec2(
-                tools.massFromSelfObj({ x: newX, y: newY }, this.selfObj)
+                tools.massFromSelfObj({ x: newX, y: newY }, this.generalInfo)
               );
               let mass2 = tools.massToVec2(
                 tools.massFromSelfObj(otherDrawInfo.pos, otherDrawInfo)
